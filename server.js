@@ -5,6 +5,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { Client, Environment } = require('square');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -28,6 +29,13 @@ const SERVICE_IDS = {
     'followup': 'SK7RLVBQI7CW6VM6PZLVIBKJ',
     'acute': 'RD372EFPIMXOOGCXSA7IFDTJ'
 };
+
+// =====================================================
+// SERVE FRONTEND - index.html
+// =====================================================
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // =====================================================
 // HEALTH CHECK ENDPOINT
@@ -61,7 +69,7 @@ app.post('/api/availability', async (req, res) => {
                     segmentFilters: [{
                         serviceVariationId: catalogObjectId,
                         teamMemberIdFilter: {
-                            any: ['TMpDyughFdZTf6ID'] // Your team member ID
+                            any: ['TMpDyughFdZTf6ID']
                         }
                     }],
                     startAtRange: {
@@ -139,7 +147,7 @@ ${allergies ? `Allergies: ${allergies}` : ''}
                 locationId: SQUARE_LOCATION_ID,
                 startAt: startAt,
                 customerNote: customerNote,
-                customerId: undefined, // Square will create customer if needed
+                customerId: undefined,
                 appointmentSegments: [{
                     durationMinutes: serviceType === 'comprehensive' ? 60 : 
                                     serviceType === 'followup' ? 30 : 20,
@@ -220,7 +228,7 @@ app.post('/api/payments', async (req, res) => {
         const paymentResponse = await squareClient.paymentsApi.createPayment({
             sourceId: sourceId,
             amountMoney: {
-                amount: amount, // Amount in cents
+                amount: amount,
                 currency: 'USD'
             },
             locationId: SQUARE_LOCATION_ID,
@@ -255,4 +263,5 @@ app.listen(PORT, () => {
     console.log(`📍 Environment: ${SQUARE_ENVIRONMENT}`);
     console.log(`📧 Square will handle all email/SMS notifications`);
     console.log(`✅ Health check: http://localhost:${PORT}/health`);
+    console.log(`🌐 Frontend serving at: http://localhost:${PORT}/`);
 });
