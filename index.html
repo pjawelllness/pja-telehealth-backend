@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PJA Wellness - Book Telehealth Consultation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { text-align: center; padding: 40px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .content { padding: 40px; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        .service-card { border: 2px solid #e9ecef; border-radius: 12px; padding: 20px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; }
+        .service-card:hover { border-color: #667eea; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2); }
+        .service-price { font-size: 32px; font-weight: bold; color: #667eea; margin: 10px 0; }
+        .btn { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+        .btn:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 PJA Wellness Management</h1>
+            <p>HIPAA-Compliant Telehealth Consultations</p>
+        </div>
+        <div class="content">
+            <h2>Select Your Service</h2>
+            
+            <div class="service-card" onclick="book('comprehensive')">
+                <h3>Comprehensive Wellness Visit</h3>
+                <div class="service-price">$99</div>
+                <p>60 minutes - Complete health assessment & personalized wellness plan</p>
+            </div>
+
+            <div class="service-card" onclick="book('followup')">
+                <h3>Follow-up Consultation</h3>
+                <div class="service-price">$75</div>
+                <p>30 minutes - Progress check-in & treatment adjustments</p>
+            </div>
+
+            <div class="service-card" onclick="book('acute')">
+                <h3>Acute Care Visit</h3>
+                <div class="service-price">$50</div>
+                <p>20 minutes - Immediate concerns & acute symptoms</p>
+            </div>
+
+            <p style="margin-top: 30px; text-align: center; color: #6c757d;">
+                <strong>HSA/FSA Eligible</strong><br>
+                Board Certified Holistic Health Practitioner Patrick Smith<br>
+                🔒 100% HIPAA Compliant
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function book(service) {
+            const links = {
+                'comprehensive': 'https://square.link/u/seXJR3vc',
+                'followup': 'https://square.link/u/IYT3hsZj',
+                'acute': 'https://square.link/u/0Gfis1tW'
+            };
+            window.location.href = links[service] || links.comprehensive;
+        }
+    </script>
+</body>
+</html>
