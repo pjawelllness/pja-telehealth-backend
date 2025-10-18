@@ -24,25 +24,25 @@ const squareClient = new Client({
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID || 'LCH18SFX6M76N';
 const TEAM_MEMBER_ID = process.env.TEAM_MEMBER_ID || 'TMpDyughFdZTf6ID';
 
-// Service catalog - THESE ARE YOUR ACTUAL SQUARE SERVICE IDs
+// Service catalog - REAL Square Service IDs (created Oct 18, 2025)
 const SERVICES = {
     'comprehensive': {
-        catalogId: 'Q4SB3C5I3XLEGYGRDZ475EPR',
-        variationId: 'FERPKMQW2KKZA7EHIBK76UC7',
+        catalogId: 'EMGH5BEA4XAVX5F35AUZAFP7',
+        variationId: 'Y67G2HA7FIDECITXSSWG5IJW',
         name: 'Comprehensive Wellness Visit',
         duration: 60,
         price: 9900
     },
     'followup': {
-        catalogId: 'XNZPJHJHPAMJZSKBXJ3VWXDN',
-        variationId: 'XVKXVXM7QJCYBQT3B23JMKSD',
+        catalogId: '5XG2HJ3AL3R64QBZHTH56KOQ',
+        variationId: 'FPUI6RZVD46ON22IPE4NKINC',
         name: 'Follow-up Consultation',
         duration: 30,
         price: 7500
     },
     'acute': {
-        catalogId: '5UUQU7XOV5UGSYQVKQ6IY4VR',
-        variationId: 'ILBFN62P63T6U6FKUBFVMGZG',
+        catalogId: '4PHOJI2QV5HAWWCKPT7G2ITI',
+        variationId: 'OLIXI2RPXRE2VN6CXFQBVIB6',
         name: 'Acute Care Visit',
         duration: 20,
         price: 5000
@@ -102,7 +102,6 @@ app.post('/api/availability', async (req, res) => {
 
         console.log(`   Date range: ${start} to ${end}`);
 
-        // Call Square Bookings API to search for REAL availability
         const searchBody = {
             query: {
                 filter: {
@@ -175,18 +174,11 @@ app.post('/api/booking', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedSlot, paymentToken } = req.body;
 
-        // Validate required fields
         if (!personal || !service || !selectedSlot) {
             console.error('❌ Missing required fields');
             return res.status(400).json({
                 success: false,
-                error: 'Missing required booking information',
-                details: {
-                    hasPersonal: !!personal,
-                    hasService: !!service,
-                    hasSelectedSlot: !!selectedSlot,
-                    hasPaymentToken: !!paymentToken
-                }
+                error: 'Missing required booking information'
             });
         }
 
@@ -202,7 +194,6 @@ app.post('/api/booking', async (req, res) => {
         console.log(`\n🏥 Creating booking for: ${serviceConfig.name}`);
         console.log(`👤 Patient: ${personal.firstName} ${personal.lastName}`);
         console.log(`📅 Time: ${selectedSlot.startAt}`);
-        console.log(`💰 Price: $${serviceConfig.price / 100}`);
 
         // STEP 1: Create/Find Customer
         let customerId;
@@ -222,7 +213,6 @@ app.post('/api/booking', async (req, res) => {
                 customerId = searchResponse.result.customers[0].id;
                 console.log('✅ Found existing customer:', customerId);
                 
-                // Update customer with latest info
                 await squareClient.customersApi.updateCustomer(customerId, {
                     givenName: personal.firstName,
                     familyName: personal.lastName,
@@ -244,11 +234,10 @@ app.post('/api/booking', async (req, res) => {
             }
         } catch (customerError) {
             console.error('❌ Customer Error:', customerError.message);
-            console.error('Details:', JSON.stringify(customerError.errors, null, 2));
             throw new Error('Failed to create/update customer: ' + customerError.message);
         }
 
-        // STEP 2: Create Payment (if token provided)
+        // STEP 2: Create Payment
         let paymentId;
         if (paymentToken) {
             try {
@@ -269,14 +258,11 @@ app.post('/api/booking', async (req, res) => {
                 console.log('✅ Payment processed:', paymentId);
             } catch (paymentError) {
                 console.error('❌ Payment Error:', paymentError.message);
-                console.error('Details:', JSON.stringify(paymentError.errors, null, 2));
                 throw new Error('Payment failed: ' + paymentError.message);
             }
-        } else {
-            console.log('⚠️ No payment token - creating booking without payment');
         }
 
-        // STEP 3: Create Booking in Square
+        // STEP 3: Create Booking
         try {
             console.log('\n📅 Creating Square booking...');
             
@@ -303,9 +289,7 @@ app.post('/api/booking', async (req, res) => {
             
             const bookingId = bookingResponse.result.booking.id;
             console.log('✅ Booking created successfully:', bookingId);
-            console.log('Full booking response:', JSON.stringify(bookingResponse.result, null, 2));
 
-            // SUCCESS!
             console.log('\n🎉 ===== BOOKING COMPLETE =====');
             res.json({
                 success: true,
@@ -316,34 +300,29 @@ app.post('/api/booking', async (req, res) => {
                 service: serviceConfig.name,
                 price: serviceConfig.price,
                 doxyLink: `https://doxy.me/PatrickPJAwellness`,
-                message: 'Appointment booked successfully! Check your email for confirmation.'
+                message: 'Appointment booked successfully!'
             });
 
         } catch (bookingError) {
             console.error('\n❌ BOOKING CREATION ERROR');
             console.error('Error message:', bookingError.message);
             console.error('Error details:', JSON.stringify(bookingError.errors, null, 2));
-            console.error('Stack trace:', bookingError.stack);
             
             return res.status(500).json({
                 success: false,
                 error: 'Failed to create booking in Square',
                 message: bookingError.message,
-                details: bookingError.errors,
-                customerId: customerId,
-                paymentId: paymentId
+                details: bookingError.errors
             });
         }
 
     } catch (error) {
         console.error('\n❌ ===== BOOKING FAILED =====');
         console.error('Error:', error.message);
-        console.error('Stack:', error.stack);
         
         res.status(500).json({
             success: false,
-            error: error.message || 'Booking failed',
-            details: 'Check server logs for more information'
+            error: error.message || 'Booking failed'
         });
     }
 });
@@ -356,14 +335,12 @@ app.get('/api/provider/appointments', async (req, res) => {
         const startAt = new Date().toISOString();
         const endAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-        console.log('Fetching bookings from', startAt, 'to', endAt);
-
         const response = await squareClient.bookingsApi.listBookings(
-            undefined, // limit
-            undefined, // cursor
-            undefined, // customerId
-            TEAM_MEMBER_ID, // teamMemberId
-            LOCATION_ID, // locationId
+            undefined,
+            undefined,
+            undefined,
+            TEAM_MEMBER_ID,
+            LOCATION_ID,
             startAt,
             endAt
         );
@@ -377,7 +354,6 @@ app.get('/api/provider/appointments', async (req, res) => {
 
     } catch (error) {
         console.error('❌ Provider Portal Error:', error.message);
-        console.error('Details:', JSON.stringify(error.errors, null, 2));
         res.status(500).json({
             success: false,
             error: error.message
@@ -393,96 +369,51 @@ function buildCustomerNote(personal, health, consents, timestamp) {
 Booking Date: ${timestamp}
 
 📋 EMERGENCY CONTACT:
-${personal.emergencyName || 'None provided'}
+${personal.emergencyName || 'None'}
 ${personal.emergencyPhone || ''}
 
-🩺 CHIEF COMPLAINT: 
-${health.chiefComplaint}
+🩺 CHIEF COMPLAINT: ${health.chiefComplaint}
+⏱ SYMPTOM DURATION: ${health.symptomDuration || 'Not specified'}
+🩹 SYMPTOMS: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}
+💊 MEDICATIONS: ${health.medications || 'None'}
+⚠️ ALLERGIES: ${health.allergies || 'None'}
 
-⏱ SYMPTOM DURATION: 
-${health.symptomDuration || 'Not specified'}
+✅ CONSENT FORMS SIGNED (${timestamp}):
+- HIPAA Privacy: SIGNED ✓
+- Telehealth Consent: SIGNED ✓
+- Recording: ${consents.recording ? 'AUTHORIZED ✓' : 'NOT AUTHORIZED'}
 
-🩹 CURRENT SYMPTOMS:
-${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None checked'}
-
-💊 MEDICATIONS:
-${health.medications || 'None reported'}
-
-⚠️ ALLERGIES:
-${health.allergies || 'None reported'}
-
-✅ CONSENT FORMS SIGNED:
-- HIPAA Privacy Notice: SIGNED ✓ (${timestamp})
-- Telehealth Informed Consent: SIGNED ✓ (${timestamp})
-- Recording Authorization: ${consents.recording ? 'AUTHORIZED ✓' : 'NOT AUTHORIZED'}
-
-🔒 COMPLIANCE:
-Platform: PJA Telehealth (HIPAA compliant)
-Video Platform: Doxy.me (HIPAA compliant - BAA on file)
+🔒 Platform: Doxy.me (HIPAA compliant)
 Provider: Patrick Smith, BCHHP
-Digital Signature: ${consents.signature}
-
-All consent forms stored in Square (HIPAA compliant system)
     `.trim();
 }
 
 function buildPatientNote(health, service) {
-    return `
-Chief Complaint: ${health.chiefComplaint}
-Duration: ${health.symptomDuration || 'Not specified'}
-Symptoms: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None checked'}
-
-Service: ${service.name}
-Duration: ${service.duration || 30} minutes
-
-Patient will receive Doxy.me link via email.
-    `.trim();
+    return `Chief Complaint: ${health.chiefComplaint}\nDuration: ${health.symptomDuration || 'Not specified'}\nSymptoms: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}\n\nService: ${service.name}\nDuration: ${service.duration} minutes`;
 }
 
 function buildProviderNote(personal, health, consents, service, timestamp) {
     return `
-🩺 TELEHEALTH CONSULTATION - ${service.name}
+🩺 TELEHEALTH - ${service.name}
 
-📋 PATIENT INFORMATION:
-Name: ${personal.firstName} ${personal.lastName}
-Email: ${personal.email}
-Phone: ${personal.phone}
-DOB: ${personal.dob || 'Not provided'}
+📋 PATIENT: ${personal.firstName} ${personal.lastName}
+📧 Email: ${personal.email}
+📞 Phone: ${personal.phone}
+🎂 DOB: ${personal.dob || 'Not provided'}
+🚨 Emergency: ${personal.emergencyName || 'None'} ${personal.emergencyPhone || ''}
 
-Emergency Contact: ${personal.emergencyName || 'None'} ${personal.emergencyPhone || ''}
+🏥 CHIEF COMPLAINT: ${health.chiefComplaint}
+⏱ DURATION: ${health.symptomDuration || 'Not specified'}
+🩹 SYMPTOMS: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}
+💊 MEDICATIONS: ${health.medications || 'None'}
+⚠️ ALLERGIES: ${health.allergies || 'None'}
 
-🏥 CHIEF COMPLAINT:
-${health.chiefComplaint}
+✅ CONSENTS (Signed ${timestamp}):
+- HIPAA: SIGNED ✓
+- Telehealth: SIGNED ✓
+- Recording: ${consents.recording ? 'YES' : 'NO'}
 
-⏱ SYMPTOM DURATION: ${health.symptomDuration || 'Not specified'}
-
-🩹 CURRENT SYMPTOMS:
-${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None selected'}
-
-💊 CURRENT MEDICATIONS:
-${health.medications || 'None reported'}
-
-⚠️ KNOWN ALLERGIES:
-${health.allergies || 'None reported'}
-
-✅ CONSENT STATUS (Signed: ${timestamp}):
-- HIPAA Privacy Notice: SIGNED ✓
-- Telehealth Informed Consent: SIGNED ✓  
-- Session Recording: ${consents.recording ? 'AUTHORIZED ✓' : 'NOT AUTHORIZED'}
-- Digital Signature: ${consents.signature}
-
-🎥 VIDEO CONSULTATION LINKS:
-Provider Link: https://doxy.me/PatrickPJAwellness/provider
-Patient Link: https://doxy.me/PatrickPJAwellness
-
-📝 NOTES: 
-- All consent forms stored in Square Customer record (HIPAA compliant)
-- Patient consented to telehealth services per Michigan state law
-- Video platform: Doxy.me (HIPAA compliant, BAA on file)
-- Payment processed via Square (HIPAA compliant)
-
-Provider: Patrick Smith, Board Certified Holistic Health Practitioner (BCHHP)
-Location: PJA Wellness Management LLC, Rochester Hills, MI
+🎥 VIDEO: https://doxy.me/PatrickPJAwellness
     `.trim();
 }
 
@@ -493,11 +424,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('========================================');
     console.log(`📍 Port: ${PORT}`);
     console.log(`🌍 Environment: ${process.env.SQUARE_ENVIRONMENT || 'sandbox'}`);
-    console.log(`🏥 Location ID: ${LOCATION_ID}`);
-    console.log(`👨‍⚕️ Team Member ID: ${TEAM_MEMBER_ID}`);
-    console.log(`🔒 HIPAA Compliance: Active`);
-    console.log(`📝 Consent Storage: Square Customer Records`);
-    console.log(`💳 Payment Processing: Square Payments API`);
-    console.log(`✅ Ready to accept bookings`);
+    console.log(`🏥 Location: ${LOCATION_ID}`);
+    console.log(`✅ Ready`);
     console.log('========================================\n');
 });
