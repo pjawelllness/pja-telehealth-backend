@@ -291,21 +291,64 @@
             gap: 16px;
         }
 
+        .consent-box {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .consent-box h4 {
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .consent-box p {
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #495057;
+        }
+
+        .consent-box ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .consent-box li {
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
         .checkbox-group {
             display: flex;
             align-items: start;
             gap: 12px;
             padding: 16px;
-            background: #f8f9fa;
+            background: #fff;
+            border: 2px solid #dee2e6;
             border-radius: 8px;
             margin-bottom: 16px;
         }
 
+        .checkbox-group:hover {
+            border-color: #0066cc;
+            background: #f0f7ff;
+        }
+
         .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             margin-top: 2px;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .checkbox-group label {
@@ -314,6 +357,7 @@
             cursor: pointer;
             font-size: 14px;
             line-height: 1.6;
+            font-weight: 500;
         }
 
         .btn {
@@ -335,9 +379,14 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,102,204,0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-secondary {
@@ -465,6 +514,11 @@
             border: 1px solid #e1e8ed;
         }
 
+        .provider-login {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
         .booking-card {
             background: #f8f9fa;
             border-radius: 8px;
@@ -515,6 +569,15 @@
         .status-pending {
             background: #fff3cd;
             color: #856404;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
         }
 
         .hidden {
@@ -731,33 +794,134 @@
         <!-- Step 4: Consent Forms -->
         <div id="consentForms" class="step-content hidden">
             <div class="section-header">
-                <h2>Consent Forms</h2>
-                <p>Please review and agree to the following</p>
+                <h2>Consent & Authorization Forms</h2>
+                <p>Please review and agree to all required legal documents</p>
             </div>
 
             <div class="form-section">
+                <!-- HIPAA Authorization -->
+                <div class="consent-box">
+                    <h4>1. HIPAA AUTHORIZATION FOR RELEASE OF HEALTH INFORMATION</h4>
+                    <p><strong>Effective Date:</strong> Upon Signature Below</p>
+                    
+                    <p>I hereby authorize PJA Wellness Management LLC ("Provider") and its healthcare providers, including Patrick Smith, Board Certified Holistic Health Practitioner, to use and disclose my protected health information (PHI) as described below.</p>
+                    
+                    <p><strong>Information to be Used or Disclosed:</strong></p>
+                    <ul>
+                        <li>Complete medical history and physical examination findings</li>
+                        <li>Laboratory test results, diagnostic imaging, and other clinical findings</li>
+                        <li>Current and past treatment plans, medications, and therapies</li>
+                        <li>Mental health and substance abuse treatment records (if applicable)</li>
+                        <li>Billing and insurance information</li>
+                    </ul>
+
+                    <p><strong>Purpose of Use and Disclosure:</strong> This information will be used for:</p>
+                    <ul>
+                        <li>Treatment: Providing, coordinating, and managing healthcare services</li>
+                        <li>Payment: Billing activities and payment processing</li>
+                        <li>Healthcare Operations: Quality assessment, training, and business management</li>
+                    </ul>
+
+                    <p><strong>Your Rights:</strong></p>
+                    <ul>
+                        <li>You have the right to revoke this authorization at any time by submitting a written request</li>
+                        <li>Revocation will not affect information already disclosed</li>
+                        <li>You have the right to refuse to sign this authorization</li>
+                        <li>Information disclosed may be subject to re-disclosure and no longer protected</li>
+                    </ul>
+
+                    <p><strong>Expiration:</strong> This authorization expires one year from the date of signature, or upon completion of treatment, whichever occurs first.</p>
+                </div>
+
                 <div class="checkbox-group">
                     <input type="checkbox" id="hipaaConsent" required>
                     <label for="hipaaConsent">
-                        <strong>HIPAA Authorization:</strong> I authorize PJA Wellness Management to use and disclose my protected health information for treatment, payment, and healthcare operations as described in the Notice of Privacy Practices.
+                        <strong>I have read and understand the HIPAA Authorization above. I authorize the use and disclosure of my protected health information as described.</strong>
                     </label>
+                </div>
+
+                <!-- Telehealth Informed Consent -->
+                <div class="consent-box">
+                    <h4>2. TELEHEALTH INFORMED CONSENT & AGREEMENT</h4>
+                    
+                    <p><strong>Definition:</strong> Telehealth involves the use of electronic communications and information technologies to provide healthcare services when the patient and provider are in different locations.</p>
+
+                    <p><strong>Benefits of Telehealth:</strong></p>
+                    <ul>
+                        <li>Improved access to healthcare without geographic barriers</li>
+                        <li>More efficient medical evaluation and management</li>
+                        <li>Reduced exposure to contagious illnesses</li>
+                        <li>Convenience and flexibility in scheduling</li>
+                    </ul>
+
+                    <p><strong>Potential Risks and Limitations:</strong></p>
+                    <ul>
+                        <li>Technical difficulties may interrupt or delay the consultation</li>
+                        <li>Information transmission may be subject to unauthorized access despite security measures</li>
+                        <li>Physical examination limitations may require in-person follow-up</li>
+                        <li>In rare cases, telehealth may not provide the same level of care as in-person visits</li>
+                    </ul>
+
+                    <p><strong>Emergency Situations:</strong> Telehealth is NOT appropriate for emergency situations. If you experience a medical emergency, call 911 or go to the nearest emergency room immediately.</p>
+
+                    <p><strong>Right to Discontinue:</strong> You have the right to discontinue the telehealth visit at any time and request an in-person appointment instead.</p>
                 </div>
 
                 <div class="checkbox-group">
                     <input type="checkbox" id="telehealthConsent" required>
                     <label for="telehealthConsent">
-                        <strong>Telehealth Consent:</strong> I understand that this telehealth visit involves the use of electronic communications to enable healthcare providers at different locations to share individual patient medical information for diagnosis and treatment. I consent to participate in telehealth services and understand the potential risks, benefits, and alternatives.
+                        <strong>I have read and understand the Telehealth Informed Consent. I understand the benefits, risks, and limitations of telehealth services. I consent to participate in a telehealth consultation.</strong>
                     </label>
                 </div>
 
-                <div class="form-group">
-                    <label>Electronic Signature *</label>
-                    <input type="text" id="signature" placeholder="Type your full name as signature" required>
+                <!-- Treatment Informed Consent -->
+                <div class="consent-box">
+                    <h4>3. INFORMED CONSENT FOR TREATMENT</h4>
+                    
+                    <p>I consent to holistic healthcare treatment provided by Patrick Smith, Board Certified Holistic Health Practitioner, and other licensed providers at PJA Wellness Management LLC.</p>
+
+                    <p><strong>I understand that:</strong></p>
+                    <ul>
+                        <li>A holistic health approach focuses on the whole person - physical, mental, emotional, and spiritual wellbeing</li>
+                        <li>Treatment may include nutritional counseling, lifestyle recommendations, supplements, and other complementary therapies</li>
+                        <li>Results vary by individual and are not guaranteed</li>
+                        <li>I am responsible for following recommended treatment plans and reporting any concerns</li>
+                    </ul>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="informedConsent" required>
+                    <label for="informedConsent">
+                        <strong>I have read and understand the Informed Consent for Treatment. I consent to receive holistic healthcare treatment as recommended by my provider.</strong>
+                    </label>
+                </div>
+
+                <!-- Privacy Notice -->
+                <div class="consent-box">
+                    <h4>4. ACKNOWLEDGMENT OF RECEIPT OF PRIVACY NOTICE</h4>
+                    
+                    <p>I acknowledge that I have been provided with a copy of PJA Wellness Management LLC's Notice of Privacy Practices, which describes how my medical information may be used and disclosed, and how I can access this information.</p>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="privacyNotice" required>
+                    <label for="privacyNotice">
+                        <strong>I acknowledge receipt of the Notice of Privacy Practices and understand my rights regarding my protected health information.</strong>
+                    </label>
+                </div>
+
+                <!-- Electronic Signature -->
+                <div class="form-group" style="margin-top: 32px;">
+                    <label><strong>Electronic Signature *</strong></label>
+                    <p style="font-size: 13px; color: #6c757d; margin-bottom: 12px;">
+                        By typing your full legal name below, you are providing your electronic signature and agreeing that it has the same legal effect as a handwritten signature.
+                    </p>
+                    <input type="text" id="signature" placeholder="Type your full legal name" required>
                 </div>
 
                 <div class="btn-group">
                     <button class="btn btn-secondary" onclick="goToStep('healthInfo')">← Back</button>
-                    <button class="btn btn-primary" onclick="saveConsent()">Continue →</button>
+                    <button class="btn btn-primary" onclick="saveConsent()">I Agree - Continue →</button>
                 </div>
             </div>
         </div>
@@ -766,7 +930,7 @@
         <div id="scheduleAppointment" class="step-content hidden">
             <div class="section-header">
                 <h2>Schedule Your Appointment</h2>
-                <p>Select a convenient time for your consultation</p>
+                <p>Select a convenient time for your consultation with Patrick Smith</p>
             </div>
 
             <div class="form-section">
@@ -775,6 +939,7 @@
                     <input type="date" id="appointmentDate" onchange="loadAvailability()">
                 </div>
 
+                <div id="errorMessage"></div>
                 <div id="timeSlots"></div>
 
                 <div class="btn-group">
@@ -789,7 +954,7 @@
             <div class="loading">
                 <div class="loading-spinner"></div>
                 <h2>Processing Your Booking...</h2>
-                <p>Please wait while we confirm your appointment</p>
+                <p>Please wait while we confirm your appointment with Patrick Smith</p>
             </div>
         </div>
 
@@ -797,16 +962,40 @@
             <div class="success-screen">
                 <div class="success-icon">✓</div>
                 <h2>Appointment Confirmed!</h2>
-                <p>You will receive a confirmation email shortly with appointment details and a video call link.</p>
+                <p>Your appointment with Patrick Smith has been successfully booked. You will receive a confirmation email shortly with appointment details and a video call link.</p>
                 <button class="btn btn-primary" onclick="location.reload()">Book Another Appointment</button>
             </div>
         </div>
     </div>
 
     <!-- Provider Portal Toggle -->
-    <div class="provider-toggle" onclick="toggleProviderPortal()">
+    <div class="provider-toggle" onclick="showProviderLogin()">
         <span>👨‍⚕️</span>
         <span>Provider Portal</span>
+    </div>
+
+    <!-- Provider Portal Login -->
+    <div id="providerLogin" class="provider-portal container hidden">
+        <div class="section-header">
+            <h2>🔒 Provider Portal Access</h2>
+            <p>Secure login required</p>
+        </div>
+
+        <div class="provider-login">
+            <div class="form-section">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="providerPassword" placeholder="Enter provider password" onkeypress="handleLoginKeypress(event)">
+                </div>
+                <div id="loginError" class="error-message hidden">
+                    Incorrect password. Please try again.
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="closeProviderLogin()">Cancel</button>
+                    <button class="btn btn-primary" onclick="providerLogin()">Login</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Provider Portal -->
@@ -816,7 +1005,7 @@
             <p>View all upcoming appointments and patient information</p>
         </div>
 
-        <button class="btn btn-secondary" onclick="toggleProviderPortal()" style="margin-bottom: 20px;">← Close Portal</button>
+        <button class="btn btn-secondary" onclick="logoutProvider()" style="margin-bottom: 20px;">← Logout</button>
 
         <div id="bookingsList"></div>
     </div>
@@ -832,6 +1021,8 @@
             consent: {},
             selectedTime: null
         };
+
+        let providerToken = null;
 
         const SERVICE_IDS = {
             'Comprehensive Wellness Visit': 'EOS5TK4VKO6YGM4TYUFMXO2W',
@@ -905,20 +1096,25 @@
 
         // Consent
         function saveConsent() {
-            const hipaa = document.getElementById('hipaaConsent').checked;
-            const telehealth = document.getElementById('telehealthConsent').checked;
+            const hipaaConsent = document.getElementById('hipaaConsent').checked;
+            const telehealthConsent = document.getElementById('telehealthConsent').checked;
+            const informedConsent = document.getElementById('informedConsent').checked;
+            const privacyNotice = document.getElementById('privacyNotice').checked;
             const signature = document.getElementById('signature').value;
 
-            if (!hipaa || !telehealth || !signature) {
-                alert('Please agree to all consent forms and provide your signature');
+            if (!hipaaConsent || !telehealthConsent || !informedConsent || !privacyNotice || !signature) {
+                alert('Please read and agree to all consent forms and provide your electronic signature');
                 return;
             }
 
             bookingData.consent = {
-                hipaa,
-                telehealth,
+                hipaaConsent,
+                telehealthConsent,
+                informedConsent,
+                privacyNotice,
                 signature,
-                date: new Date().toISOString()
+                signatureDate: new Date().toISOString(),
+                ipAddress: 'Client-side IP not available'
             };
 
             goToStep('scheduleAppointment');
@@ -935,32 +1131,49 @@
             if (!date) return;
 
             const timeSlotsContainer = document.getElementById('timeSlots');
+            const errorMessageContainer = document.getElementById('errorMessage');
+            
+            errorMessageContainer.innerHTML = '';
             timeSlotsContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading available times...</p></div>';
 
             try {
                 const serviceId = SERVICE_IDS[bookingData.selectedService];
+                console.log('Requesting availability for:', { serviceId, date });
+
                 const response = await fetch('/api/availability', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ serviceId })
+                    body: JSON.stringify({ serviceId, date })
                 });
 
                 const data = await response.json();
+                console.log('Availability response:', data);
                 
-                if (data.availabilities && data.availabilities.length > 0) {
-                    const selectedDate = new Date(date);
-                    const filteredSlots = data.availabilities.filter(slot => {
-                        const slotDate = new Date(slot.startAt);
-                        return slotDate.toDateString() === selectedDate.toDateString();
-                    });
+                if (!response.ok) {
+                    throw new Error(data.details || data.error || 'Failed to load availability');
+                }
 
-                    displayTimeSlots(filteredSlots);
+                if (data.availabilities && data.availabilities.length > 0) {
+                    displayTimeSlots(data.availabilities);
                 } else {
-                    timeSlotsContainer.innerHTML = '<p style="text-align:center;color:#6c757d;">No available times for this date. Please try another date.</p>';
+                    timeSlotsContainer.innerHTML = '';
+                    errorMessageContainer.innerHTML = `
+                        <div class="error-message">
+                            <strong>No available times for this date.</strong><br>
+                            Patrick Smith is fully booked or has no availability hours set for this day. 
+                            Please try another date.
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Error loading availability:', error);
-                timeSlotsContainer.innerHTML = '<p style="text-align:center;color:#dc3545;">Error loading availability. Please try again.</p>';
+                timeSlotsContainer.innerHTML = '';
+                errorMessageContainer.innerHTML = `
+                    <div class="error-message">
+                        <strong>Error loading availability:</strong> ${error.message}<br>
+                        Please try again or contact support.
+                    </div>
+                `;
             }
         }
 
@@ -1014,6 +1227,8 @@
             updateSteps(6);
 
             try {
+                console.log('Creating booking with data:', bookingData);
+
                 const response = await fetch('/api/booking', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1021,6 +1236,7 @@
                 });
 
                 const result = await response.json();
+                console.log('Booking response:', result);
 
                 if (result.success) {
                     goToStep('successScreen');
@@ -1031,25 +1247,75 @@
                 }
             } catch (error) {
                 console.error('Booking error:', error);
-                alert('An error occurred. Please try again.');
+                alert('An error occurred while creating your booking: ' + error.message);
                 goToStep('scheduleAppointment');
                 updateSteps(5);
             }
         }
 
-        // Provider Portal
-        function toggleProviderPortal() {
-            const portal = document.getElementById('providerPortal');
-            const isHidden = portal.classList.contains('hidden');
-            
-            if (isHidden) {
-                loadBookings();
-                portal.classList.remove('hidden');
-                document.querySelector('.container').style.display = 'none';
-            } else {
-                portal.classList.add('hidden');
-                document.querySelector('.container').style.display = 'block';
+        // Provider Portal Login
+        function showProviderLogin() {
+            document.getElementById('providerLogin').classList.remove('hidden');
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('providerPassword').focus();
+        }
+
+        function closeProviderLogin() {
+            document.getElementById('providerLogin').classList.add('hidden');
+            document.querySelector('.container').style.display = 'block';
+            document.getElementById('providerPassword').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function handleLoginKeypress(event) {
+            if (event.key === 'Enter') {
+                providerLogin();
             }
+        }
+
+        async function providerLogin() {
+            const password = document.getElementById('providerPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            if (!password) {
+                errorDiv.textContent = 'Please enter a password';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/provider/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    providerToken = result.token;
+                    document.getElementById('providerLogin').classList.add('hidden');
+                    document.getElementById('providerPortal').classList.remove('hidden');
+                    loadBookings();
+                } else {
+                    errorDiv.textContent = result.message || 'Incorrect password';
+                    errorDiv.classList.remove('hidden');
+                    document.getElementById('providerPassword').value = '';
+                    document.getElementById('providerPassword').focus();
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Error connecting to server';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function logoutProvider() {
+            providerToken = null;
+            document.getElementById('providerPortal').classList.add('hidden');
+            document.querySelector('.container').style.display = 'block';
+            document.getElementById('providerPassword').value = '';
+            document.getElementById('loginError').classList.add('hidden');
         }
 
         async function loadBookings() {
@@ -1057,7 +1323,16 @@
             container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading appointments...</p></div>';
 
             try {
-                const response = await fetch('/api/bookings');
+                const response = await fetch('/api/bookings', {
+                    headers: {
+                        'Authorization': `Bearer ${providerToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Unauthorized');
+                }
+
                 const data = await response.json();
 
                 if (data.bookings && data.bookings.length > 0) {
@@ -1067,7 +1342,8 @@
                 }
             } catch (error) {
                 console.error('Error loading bookings:', error);
-                container.innerHTML = '<p style="text-align:center;color:#dc3545;">Error loading appointments</p>';
+                container.innerHTML = '<p style="text-align:center;color:#dc3545;">Error loading appointments. Please log in again.</p>';
+                setTimeout(logoutProvider, 2000);
             }
         }
 
@@ -1110,8 +1386,8 @@
                     </div>
                     ${customer?.note ? `
                         <details style="margin-top: 12px;">
-                            <summary style="cursor: pointer; font-weight: 600; color: #495057;">View Patient Notes</summary>
-                            <pre style="white-space: pre-wrap; margin-top: 12px; font-size: 13px; color: #6c757d;">${customer.note}</pre>
+                            <summary style="cursor: pointer; font-weight: 600; color: #495057; padding: 8px; background: white; border-radius: 6px;">📋 View Complete Patient Record & Consent Forms</summary>
+                            <pre style="white-space: pre-wrap; margin-top: 12px; font-size: 13px; color: #495057; background: white; padding: 16px; border-radius: 6px; max-height: 500px; overflow-y: auto;">${customer.note}</pre>
                         </details>
                     ` : ''}
                 `;
