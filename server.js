@@ -72,7 +72,8 @@ app.get('/api/services', async (req, res) => {
             productTypes: ['APPOINTMENTS_SERVICE']
         });
 
-        console.log('📋 Raw catalog search result:', JSON.stringify(result, null, 2));
+        // Don't log raw result - contains BigInt values that can't be serialized
+        console.log('📋 Searching for telehealth services...');
 
         const telehealth = result.items
             ?.filter(item => 
@@ -91,17 +92,18 @@ app.get('/api/services', async (req, res) => {
                     : priceAmount || 0;
                 
                 return {
-                    id: item.id,
-                    variationId: variation?.id || '',
-                    name: item.itemData?.name || '',
-                    description: item.itemData?.description || '',
+                    id: String(item.id || ''),
+                    variationId: String(variation?.id || ''),
+                    name: String(item.itemData?.name || ''),
+                    description: String(item.itemData?.description || ''),
                     price: (priceInCents / 100).toFixed(2),
                     duration: 30
                 };
             }) || [];
 
         console.log(`✅ Found ${telehealth.length} telehealth services`);
-
+        
+        // Return clean data (no BigInt values)
         res.json({ services: telehealth });
     } catch (error) {
         console.error('❌ Error fetching services:', error);
