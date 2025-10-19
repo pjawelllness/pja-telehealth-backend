@@ -77,10 +77,7 @@ app.get('/api/services', async (req, res) => {
 
         const telehealth = result.items
             ?.filter(item => 
-                item.itemData?.name?.toLowerCase().includes('telehealth') ||
-                item.itemData?.name?.toLowerCase().includes('wellness') ||
-                item.itemData?.name?.toLowerCase().includes('consultation') ||
-                item.itemData?.name?.toLowerCase().includes('acute care')
+                item.itemData?.name?.toLowerCase().includes('telehealth')
             )
             .map(item => {
                 const variation = item.itemData?.variations?.[0];
