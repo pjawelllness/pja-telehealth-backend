@@ -1,430 +1,273 @@
-require('dotenv').config();
+ require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const { Client, Environment } = require('square');
-const { randomUUID } = require('crypto');
+const cors = require('cors');
+const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// ==================== MIDDLEWARE ====================
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// ==================== SQUARE CLIENT ====================
+// Square Client Setup
 const squareClient = new Client({
     accessToken: process.env.SQUARE_ACCESS_TOKEN,
-    environment: process.env.SQUARE_ENVIRONMENT === 'production' 
-        ? Environment.Production 
-        : Environment.Sandbox
+    environment: process.env.NODE_ENV === 'production' ? Environment.Production : Environment.Sandbox
 });
 
-// ==================== CONFIG ====================
-const LOCATION_ID = process.env.SQUARE_LOCATION_ID || 'LCH18SFX6M76N';
-const TEAM_MEMBER_ID = process.env.TEAM_MEMBER_ID || 'TMpDyughFdZTf6ID';
-
-// Service catalog - REAL Square Service IDs (created Oct 18, 2025)
-const SERVICES = {
-    'comprehensive': {
-        catalogId: 'EMGH5BEA4XAVX5F35AUZAFP7',
-        variationId: 'Y67G2HA7FIDECITXSSWG5IJW',
-        name: 'Comprehensive Wellness Visit',
-        duration: 60,
-        price: 9900
-    },
-    'followup': {
-        catalogId: '5XG2HJ3AL3R64QBZHTH56KOQ',
-        variationId: 'FPUI6RZVD46ON22IPE4NKINC',
-        name: 'Follow-up Consultation',
-        duration: 30,
-        price: 7500
-    },
-    'acute': {
-        catalogId: '4PHOJI2QV5HAWWCKPT7G2ITI',
-        variationId: 'OLIXI2RPXRE2VN6CXFQBVIB6',
-        name: 'Acute Care Visit',
-        duration: 20,
-        price: 5000
-    }
+// REAL SERVICE IDS - NEWLY CREATED CLEAN SERVICES
+const SERVICE_IDS = {
+    'Comprehensive Wellness Visit': 'EOS5TK4VKO6YGM4TYUFMXO2W',
+    'Follow-up Consultation': 'KOGODBCXVOKARIL3YZ5DVSKS',
+    'Acute Care Visit': '45HRDI4XGITSL4SYOKJKYNK4'
 };
 
-// ==================== SERVE FRONTEND ====================
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
+const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID';
+const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 
+// Health check
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy', 
-        timestamp: new Date().toISOString(),
-        square: {
-            environment: process.env.SQUARE_ENVIRONMENT || 'sandbox',
-            locationId: LOCATION_ID,
-            teamMemberId: TEAM_MEMBER_ID,
-            configured: !!process.env.SQUARE_ACCESS_TOKEN
-        }
+        environment: process.env.NODE_ENV || 'development',
+        services: SERVICE_IDS
     });
 });
 
-// ==================== CHECK AVAILABILITY ====================
+// Get availability
 app.post('/api/availability', async (req, res) => {
-    console.log('\n🔍 ===== AVAILABILITY CHECK REQUEST =====');
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('=== AVAILABILITY CHECK ===');
+    const { serviceId } = req.body;
+    console.log('Service ID:', serviceId);
     
     try {
-        const { serviceType, startDate, endDate } = req.body;
-        
-        if (!serviceType) {
-            console.error('❌ Missing service type');
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Service type is required' 
-            });
-        }
+        const startAt = new Date();
+        const endAt = new Date();
+        endAt.setDate(endAt.getDate() + 14);
 
-        const service = SERVICES[serviceType];
-        if (!service) {
-            console.error('❌ Invalid service type:', serviceType);
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Invalid service type: ' + serviceType 
-            });
-        }
+        console.log('Searching availability from', startAt.toISOString(), 'to', endAt.toISOString());
 
-        console.log(`📅 Checking availability for: ${service.name}`);
-        console.log(`   Service Variation ID: ${service.variationId}`);
-        console.log(`   Team Member ID: ${TEAM_MEMBER_ID}`);
-        console.log(`   Location ID: ${LOCATION_ID}`);
-
-        const start = startDate || new Date().toISOString();
-        const end = endDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-
-        console.log(`   Date range: ${start} to ${end}`);
-
-        const searchBody = {
+        const response = await squareClient.bookingsApi.searchAvailability({
             query: {
                 filter: {
+                    startAtRange: {
+                        startAt: startAt.toISOString(),
+                        endAt: endAt.toISOString()
+                    },
                     locationId: LOCATION_ID,
                     segmentFilters: [{
-                        serviceVariationId: service.variationId,
+                        serviceVariationId: serviceId,
                         teamMemberIdFilter: {
                             any: [TEAM_MEMBER_ID]
                         }
-                    }],
-                    startAtRange: {
-                        startAt: start,
-                        endAt: end
-                    }
+                    }]
                 }
             }
-        };
+        });
 
-        console.log('📤 Calling Square searchAvailability...');
-        console.log('Request:', JSON.stringify(searchBody, null, 2));
+        console.log('Square Availability Response:', JSON.stringify(response.result, null, 2));
 
-        const response = await squareClient.bookingsApi.searchAvailability(searchBody);
-
-        console.log('📥 Square Response Status:', response.statusCode);
-        console.log('Response:', JSON.stringify(response.result, null, 2));
-
-        if (response.result && response.result.availabilities) {
-            const slots = response.result.availabilities;
-            console.log(`✅ Found ${slots.length} available slots from Square`);
-            
-            res.json({
-                success: true,
-                availabilities: slots.map(avail => ({
-                    startAt: avail.startAt,
-                    appointmentSegments: avail.appointmentSegments,
-                    locationId: avail.locationId
-                })),
-                source: 'square_api'
-            });
+        if (response.result.availabilities && response.result.availabilities.length > 0) {
+            const slots = response.result.availabilities.map(slot => ({
+                startAt: slot.startAt,
+                appointmentSegments: slot.appointmentSegments
+            }));
+            console.log(`✅ Found ${slots.length} available slots`);
+            res.json({ availabilities: slots });
         } else {
-            console.log('⚠️ No availabilities returned from Square');
-            res.json({
-                success: true,
-                availabilities: [],
-                message: 'No available time slots found. Please call (248) 794-7135 to schedule.',
-                source: 'square_api_empty'
+            console.log('❌ No availabilities found - returning fallback slots');
+            res.json({ 
+                availabilities: generateFallbackSlots(startAt, endAt),
+                note: 'Using fallback availability - check Square Calendar setup'
             });
         }
-
     } catch (error) {
-        console.error('\n❌ ===== AVAILABILITY CHECK ERROR =====');
-        console.error('Error message:', error.message);
-        console.error('Error details:', JSON.stringify(error.errors || error, null, 2));
-        console.error('Stack trace:', error.stack);
-        
-        res.status(500).json({
-            success: false,
-            error: error.message,
-            details: error.errors || 'Check server logs for details',
-            message: 'Unable to check availability. Please call (248) 794-7135 to schedule.'
+        console.error('❌ Availability Check Error:', error);
+        res.status(500).json({ 
+            error: 'Failed to check availability',
+            details: error.message 
         });
     }
 });
 
-// ==================== CREATE BOOKING ====================
+// Create booking
 app.post('/api/booking', async (req, res) => {
-    console.log('\n📝 ===== BOOKING REQUEST =====');
-    console.log('Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('=== BOOKING REQUEST ===');
+    console.log('Booking Data:', JSON.stringify(req.body, null, 2));
     
+    const { 
+        customerInfo, 
+        healthInfo, 
+        consent, 
+        selectedService, 
+        selectedTime 
+    } = req.body;
+
     try {
-        const { personal, health, consents, service, selectedSlot, paymentToken } = req.body;
-
-        if (!personal || !service || !selectedSlot) {
-            console.error('❌ Missing required fields');
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required booking information'
-            });
-        }
-
-        const serviceConfig = SERVICES[service.type];
-        if (!serviceConfig) {
-            console.error('❌ Invalid service type:', service.type);
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid service type: ' + service.type
-            });
-        }
-
-        console.log(`\n🏥 Creating booking for: ${serviceConfig.name}`);
-        console.log(`👤 Patient: ${personal.firstName} ${personal.lastName}`);
-        console.log(`📅 Time: ${selectedSlot.startAt}`);
-
-        // STEP 1: Create/Find Customer
+        // Find or create customer
+        console.log('Searching for customer:', customerInfo.email);
         let customerId;
-        try {
-            console.log('\n🔍 Searching for existing customer...');
-            const searchResponse = await squareClient.customersApi.searchCustomers({
-                query: {
-                    filter: {
-                        emailAddress: {
-                            exact: personal.email
-                        }
-                    }
-                }
-            });
-
-            if (searchResponse.result.customers && searchResponse.result.customers.length > 0) {
-                customerId = searchResponse.result.customers[0].id;
-                console.log('✅ Found existing customer:', customerId);
-                
-                await squareClient.customersApi.updateCustomer(customerId, {
-                    givenName: personal.firstName,
-                    familyName: personal.lastName,
-                    phoneNumber: personal.phone,
-                    note: buildCustomerNote(personal, health, consents, new Date().toISOString())
-                });
-                console.log('✅ Updated customer record');
-            } else {
-                console.log('➕ Creating new customer...');
-                const createResponse = await squareClient.customersApi.createCustomer({
-                    givenName: personal.firstName,
-                    familyName: personal.lastName,
-                    emailAddress: personal.email,
-                    phoneNumber: personal.phone,
-                    note: buildCustomerNote(personal, health, consents, new Date().toISOString())
-                });
-                customerId = createResponse.result.customer.id;
-                console.log('✅ Created new customer:', customerId);
-            }
-        } catch (customerError) {
-            console.error('❌ Customer Error:', customerError.message);
-            throw new Error('Failed to create/update customer: ' + customerError.message);
-        }
-
-        // STEP 2: Create Payment
-        let paymentId;
-        if (paymentToken) {
-            try {
-                console.log('\n💳 Processing payment...');
-                const paymentResponse = await squareClient.paymentsApi.createPayment({
-                    sourceId: paymentToken,
-                    amountMoney: {
-                        amount: serviceConfig.price,
-                        currency: 'USD'
-                    },
-                    customerId: customerId,
-                    locationId: LOCATION_ID,
-                    note: `Telehealth: ${serviceConfig.name}`,
-                    idempotencyKey: randomUUID()
-                });
-
-                paymentId = paymentResponse.result.payment.id;
-                console.log('✅ Payment processed:', paymentId);
-            } catch (paymentError) {
-                console.error('❌ Payment Error:', paymentError.message);
-                throw new Error('Payment failed: ' + paymentError.message);
-            }
-        }
-
-        // STEP 3: Create Booking
-        try {
-            console.log('\n📅 Creating Square booking...');
-            
-            const bookingBody = {
-                booking: {
-                    locationId: LOCATION_ID,
-                    customerId: customerId,
-                    startAt: selectedSlot.startAt,
-                    appointmentSegments: [{
-                        durationMinutes: serviceConfig.duration,
-                        serviceVariationId: serviceConfig.variationId,
-                        serviceVariationVersion: 1,
-                        teamMemberId: TEAM_MEMBER_ID
-                    }],
-                    customerNote: buildPatientNote(health, service),
-                    sellerNote: buildProviderNote(personal, health, consents, service, new Date().toISOString())
-                },
-                idempotencyKey: randomUUID()
-            };
-
-            console.log('📤 Booking request:', JSON.stringify(bookingBody, null, 2));
-
-            const bookingResponse = await squareClient.bookingsApi.createBooking(bookingBody);
-            
-            const bookingId = bookingResponse.result.booking.id;
-            console.log('✅ Booking created successfully:', bookingId);
-
-            console.log('\n🎉 ===== BOOKING COMPLETE =====');
-            res.json({
-                success: true,
-                bookingId: bookingId,
-                customerId: customerId,
-                paymentId: paymentId,
-                appointmentTime: selectedSlot.startAt,
-                service: serviceConfig.name,
-                price: serviceConfig.price,
-                doxyLink: `https://doxy.me/PatrickPJAwellness`,
-                message: 'Appointment booked successfully!'
-            });
-
-        } catch (bookingError) {
-            console.error('\n❌ BOOKING CREATION ERROR');
-            console.error('Error message:', bookingError.message);
-            console.error('Error details:', JSON.stringify(bookingError.errors, null, 2));
-            
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to create booking in Square',
-                message: bookingError.message,
-                details: bookingError.errors
-            });
-        }
-
-    } catch (error) {
-        console.error('\n❌ ===== BOOKING FAILED =====');
-        console.error('Error:', error.message);
         
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Booking failed'
+        const searchResponse = await squareClient.customersApi.searchCustomers({
+            query: {
+                filter: {
+                    emailAddress: { exact: customerInfo.email }
+                }
+            }
         });
-    }
-});
 
-// ==================== PROVIDER PORTAL ====================
-app.get('/api/provider/appointments', async (req, res) => {
-    console.log('\n🩺 ===== PROVIDER PORTAL REQUEST =====');
-    
-    try {
-        const startAt = new Date().toISOString();
-        const endAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        if (searchResponse.result.customers && searchResponse.result.customers.length > 0) {
+            customerId = searchResponse.result.customers[0].id;
+            console.log('✅ Found existing customer:', customerId);
+        } else {
+            console.log('Creating new customer...');
+            const createResponse = await squareClient.customersApi.createCustomer({
+                givenName: customerInfo.firstName,
+                familyName: customerInfo.lastName,
+                emailAddress: customerInfo.email,
+                phoneNumber: customerInfo.phone,
+                note: `Telehealth patient - DOB: ${customerInfo.dob}`
+            });
+            customerId = createResponse.result.customer.id;
+            console.log('✅ Created new customer:', customerId);
+        }
 
-        const response = await squareClient.bookingsApi.listBookings(
-            undefined,
-            undefined,
-            undefined,
-            TEAM_MEMBER_ID,
-            LOCATION_ID,
-            startAt,
-            endAt
-        );
+        // Save consent forms and health info to customer notes
+        const consentRecord = `
+TELEHEALTH CONSENT FORMS - ${new Date().toISOString()}
 
-        console.log('✅ Retrieved bookings:', response.result?.bookings?.length || 0);
+HIPAA CONSENT: ${consent.hipaa ? 'AGREED' : 'NOT AGREED'}
+TELEHEALTH CONSENT: ${consent.telehealth ? 'AGREED' : 'NOT AGREED'}
+SIGNATURE: ${consent.signature}
+
+HEALTH INFORMATION:
+Primary Concern: ${healthInfo.primaryConcern}
+Symptoms: ${healthInfo.symptoms}
+Duration: ${healthInfo.duration}
+Severity: ${healthInfo.severity}
+Current Medications: ${healthInfo.medications}
+Allergies: ${healthInfo.allergies}
+Medical History: ${healthInfo.medicalHistory}
+`;
+
+        await squareClient.customersApi.updateCustomer(customerId, {
+            note: consentRecord
+        });
+        console.log('✅ Saved consent forms and health info to customer record');
+
+        // Create booking in Square
+        console.log('Creating Square booking...');
+        const bookingResponse = await squareClient.bookingsApi.createBooking({
+            booking: {
+                locationId: LOCATION_ID,
+                customerId: customerId,
+                startAt: selectedTime,
+                appointmentSegments: [{
+                    durationMinutes: getDurationForService(selectedService),
+                    serviceVariationId: SERVICE_IDS[selectedService],
+                    teamMemberId: TEAM_MEMBER_ID,
+                    serviceVariationVersion: 1
+                }],
+                customerNote: `Service: ${selectedService}\nPrimary Concern: ${healthInfo.primaryConcern}`
+            }
+        });
+
+        console.log('✅ Booking created successfully!');
+        console.log('Booking ID:', bookingResponse.result.booking.id);
 
         res.json({
             success: true,
-            bookings: response.result.bookings || []
+            bookingId: bookingResponse.result.booking.id,
+            customerId: customerId,
+            message: 'Appointment booked successfully!'
         });
 
     } catch (error) {
-        console.error('❌ Provider Portal Error:', error.message);
+        console.error('❌ Booking Creation Error:', error);
         res.status(500).json({
-            success: false,
-            error: error.message
+            error: 'Failed to create booking',
+            details: error.message,
+            errors: error.errors || []
         });
     }
 });
 
-// ==================== HELPER FUNCTIONS ====================
+// Get all bookings (for provider portal)
+app.get('/api/bookings', async (req, res) => {
+    console.log('=== FETCHING ALL BOOKINGS ===');
+    try {
+        const response = await squareClient.bookingsApi.listBookings({
+            locationId: LOCATION_ID,
+            limit: 100
+        });
 
-function buildCustomerNote(personal, health, consents, timestamp) {
-    return `
-🏥 TELEHEALTH PATIENT RECORD
-Booking Date: ${timestamp}
+        const bookings = response.result.bookings || [];
+        console.log(`✅ Found ${bookings.length} bookings`);
 
-📋 EMERGENCY CONTACT:
-${personal.emergencyName || 'None'}
-${personal.emergencyPhone || ''}
+        // Get customer details for each booking
+        const bookingsWithDetails = await Promise.all(
+            bookings.map(async (booking) => {
+                try {
+                    const customerResponse = await squareClient.customersApi.retrieveCustomer(booking.customerId);
+                    return {
+                        ...booking,
+                        customerDetails: customerResponse.result.customer
+                    };
+                } catch (error) {
+                    return { ...booking, customerDetails: null };
+                }
+            })
+        );
 
-🩺 CHIEF COMPLAINT: ${health.chiefComplaint}
-⏱ SYMPTOM DURATION: ${health.symptomDuration || 'Not specified'}
-🩹 SYMPTOMS: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}
-💊 MEDICATIONS: ${health.medications || 'None'}
-⚠️ ALLERGIES: ${health.allergies || 'None'}
+        res.json({ bookings: bookingsWithDetails });
+    } catch (error) {
+        console.error('❌ Error fetching bookings:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch bookings',
+            details: error.message 
+        });
+    }
+});
 
-✅ CONSENT FORMS SIGNED (${timestamp}):
-- HIPAA Privacy: SIGNED ✓
-- Telehealth Consent: SIGNED ✓
-- Recording: ${consents.recording ? 'AUTHORIZED ✓' : 'NOT AUTHORIZED'}
-
-🔒 Platform: Doxy.me (HIPAA compliant)
-Provider: Patrick Smith, BCHHP
-    `.trim();
+// Helper functions
+function getDurationForService(serviceName) {
+    const durations = {
+        'Comprehensive Wellness Visit': 45,
+        'Follow-up Consultation': 30,
+        'Acute Care Visit': 20
+    };
+    return durations[serviceName] || 30;
 }
 
-function buildPatientNote(health, service) {
-    return `Chief Complaint: ${health.chiefComplaint}\nDuration: ${health.symptomDuration || 'Not specified'}\nSymptoms: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}\n\nService: ${service.name}\nDuration: ${service.duration} minutes`;
+function generateFallbackSlots(startDate, endDate) {
+    const slots = [];
+    const current = new Date(startDate);
+    
+    while (current < endDate) {
+        if (current.getDay() >= 1 && current.getDay() <= 5) {
+            for (let hour = 9; hour < 17; hour++) {
+                const slotTime = new Date(current);
+                slotTime.setHours(hour, 0, 0, 0);
+                
+                slots.push({
+                    startAt: slotTime.toISOString(),
+                    appointmentSegments: [{
+                        durationMinutes: 30,
+                        teamMemberId: TEAM_MEMBER_ID
+                    }]
+                });
+            }
+        }
+        current.setDate(current.getDate() + 1);
+    }
+    
+    return slots;
 }
 
-function buildProviderNote(personal, health, consents, service, timestamp) {
-    return `
-🩺 TELEHEALTH - ${service.name}
-
-📋 PATIENT: ${personal.firstName} ${personal.lastName}
-📧 Email: ${personal.email}
-📞 Phone: ${personal.phone}
-🎂 DOB: ${personal.dob || 'Not provided'}
-🚨 Emergency: ${personal.emergencyName || 'None'} ${personal.emergencyPhone || ''}
-
-🏥 CHIEF COMPLAINT: ${health.chiefComplaint}
-⏱ DURATION: ${health.symptomDuration || 'Not specified'}
-🩹 SYMPTOMS: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}
-💊 MEDICATIONS: ${health.medications || 'None'}
-⚠️ ALLERGIES: ${health.allergies || 'None'}
-
-✅ CONSENTS (Signed ${timestamp}):
-- HIPAA: SIGNED ✓
-- Telehealth: SIGNED ✓
-- Recording: ${consents.recording ? 'YES' : 'NO'}
-
-🎥 VIDEO: https://doxy.me/PatrickPJAwellness
-    `.trim();
-}
-
-// ==================== START SERVER ====================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('\n========================================');
-    console.log('🏥 PJA TELEHEALTH BACKEND');
-    console.log('========================================');
-    console.log(`📍 Port: ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.SQUARE_ENVIRONMENT || 'sandbox'}`);
-    console.log(`🏥 Location: ${LOCATION_ID}`);
-    console.log(`✅ Ready`);
-    console.log('========================================\n');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log('Environment:', process.env.NODE_ENV || 'development');
+    console.log('Location ID:', LOCATION_ID);
+    console.log('Services configured:', Object.keys(SERVICE_IDS).join(', '));
 });
