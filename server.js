@@ -18,12 +18,10 @@ const squareClient = new Client({
 
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID || 'LT1S9BE1EX0PW';
 const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'PJA2025!Secure';
-
-// Doxy.me Configuration - YOUR ACTUAL ROOM
 const DOXY_ROOM_URL = process.env.DOXY_ROOM_URL || 'https://doxy.me/PatrickPJAwellness';
 const PROVIDER_NAME = 'Patrick Smith, Board Certified Healthcare Provider';
 
-// Helper: Convert BigInt to String for JSON
+// Helper functions
 function convertBigIntToString(obj) {
     if (obj === null || obj === undefined) return obj;
     if (typeof obj === 'bigint') return obj.toString();
@@ -38,76 +36,10 @@ function convertBigIntToString(obj) {
     return obj;
 }
 
-// Helper: Generate appointment confirmation email
-async function generateAppointmentEmail(customerEmail, appointmentDetails) {
-    const emailContent = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏥 PJA WELLNESS - APPOINTMENT CONFIRMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Dear ${appointmentDetails.patientName},
-
-Your telehealth appointment has been successfully confirmed!
-
-📅 APPOINTMENT DETAILS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Date: ${appointmentDetails.date}
-Time: ${appointmentDetails.time}
-Service: ${appointmentDetails.serviceName}
-Provider: ${PROVIDER_NAME}
-Amount Paid: $${appointmentDetails.amount}
-
-💻 YOUR TELEHEALTH ROOM:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${DOXY_ROOM_URL}
-
-Click the link above at your appointment time to join!
-
-⏰ IMPORTANT REMINDERS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ You will receive a reminder 24 hours before
-✅ Join 5 minutes early to test audio/video
-✅ Have your ID and insurance card ready
-✅ Use a private, quiet location with good lighting
-
-📋 WHAT TO PREPARE:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Computer, tablet, or smartphone with camera
-• Good internet connection
-• List of current medications
-• Any relevant medical documents
-
-🔧 TECHNICAL SUPPORT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-If you have trouble connecting:
-1. Try a different browser (Chrome recommended)
-2. Check camera/microphone permissions
-3. Test at: ${DOXY_ROOM_URL}
-
-❓ QUESTIONS OR NEED TO RESCHEDULE?
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Email: support@pjawellness.com
-Phone: 1-800-PJA-WELLNESS
-
-We look forward to serving you!
-
-Best regards,
-PJA Wellness Team
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-This is an automated confirmation from PJA Wellness
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    `;
-    
-    console.log('📧 Appointment confirmation generated for:', customerEmail);
-    return emailContent;
-}
-
-// ============================================
+// ========================================
 // API ROUTES (MUST COME BEFORE STATIC FILES!)
-// ============================================
+// ========================================
 
-// Health check
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'healthy', 
@@ -116,7 +48,6 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Get services
 app.get('/api/services', async (req, res) => {
     try {
         console.log('📋 Fetching services from Square...');
@@ -144,7 +75,6 @@ app.get('/api/services', async (req, res) => {
     }
 });
 
-// Get availability for a specific date
 app.post('/api/availability', async (req, res) => {
     try {
         const { date, serviceId } = req.body;
@@ -160,7 +90,7 @@ app.post('/api/availability', async (req, res) => {
         const endAt = new Date(selectedDate);
         endAt.setHours(23, 59, 59, 999);
 
-        console.log('🔍 Searching availability for Patrick Smith:', {
+        console.log('🔍 Searching availability:', {
             locationId: LOCATION_ID,
             startAt: startAt.toISOString(),
             endAt: endAt.toISOString()
@@ -199,7 +129,7 @@ app.post('/api/availability', async (req, res) => {
             })
             .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
 
-        console.log(`✅ Found ${filteredSlots.length} available slots for ${date}`);
+        console.log(`✅ Found ${filteredSlots.length} slots for ${date}`);
 
         res.json({ 
             availabilities: filteredSlots,
@@ -212,7 +142,6 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// Create or get customer
 app.post('/api/customer', async (req, res) => {
     try {
         const { firstName, lastName, email, phone } = req.body;
@@ -250,63 +179,35 @@ app.post('/api/customer', async (req, res) => {
     }
 });
 
-// Save consent forms and patient data to customer notes
 app.post('/api/save-consent', async (req, res) => {
     try {
         const { customerId, consentData } = req.body;
 
         const consentText = `
-╔════════════════════════════════════════════════════════════╗
-║        PATIENT INTAKE & CONSENT FORMS                      ║
-║        Completed: ${new Date().toLocaleString()}                       ║
-╚════════════════════════════════════════════════════════════╝
+CONSENT FORMS - ${new Date().toLocaleString()}
 
-📋 CONSENT STATUS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ HIPAA Consent: ${consentData.hipaaConsent ? 'AGREED' : 'NOT AGREED'}
-✅ Telehealth Consent: ${consentData.telehealthConsent ? 'AGREED' : 'NOT AGREED'}
-✅ Informed Consent: ${consentData.informedConsent ? 'AGREED' : 'NOT AGREED'}
+HIPAA: ${consentData.hipaaConsent ? 'AGREED' : 'NOT AGREED'}
+Telehealth: ${consentData.telehealthConsent ? 'AGREED' : 'NOT AGREED'}
+Treatment: ${consentData.informedConsent ? 'AGREED' : 'NOT AGREED'}
 
-👤 PATIENT INFORMATION:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Name: ${consentData.patientName}
+PATIENT: ${consentData.patientName}
 DOB: ${consentData.dob}
-Phone: ${consentData.phone}
-Email: ${consentData.email}
-Address: ${consentData.address}
+EMAIL: ${consentData.email}
+PHONE: ${consentData.phone}
+ADDRESS: ${consentData.address}
 
-🚨 EMERGENCY CONTACT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Name: ${consentData.emergencyName}
-Phone: ${consentData.emergencyPhone}
-Relationship: ${consentData.emergencyRelationship}
+EMERGENCY CONTACT: ${consentData.emergencyName}
+EMERGENCY PHONE: ${consentData.emergencyPhone}
+RELATIONSHIP: ${consentData.emergencyRelationship}
 
-🏥 CHIEF COMPLAINT & MEDICAL HISTORY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Primary Concerns: ${consentData.primaryConcerns}
+CONCERNS: ${consentData.primaryConcerns}
+MEDICATIONS: ${consentData.currentMedications}
+ALLERGIES: ${consentData.allergies}
+HISTORY: ${consentData.medicalHistory}
 
-Current Medications: 
-${consentData.currentMedications || 'None reported'}
-
-Known Allergies: 
-${consentData.allergies || 'None reported'}
-
-Medical History: 
-${consentData.medicalHistory || 'None reported'}
-
-💳 INSURANCE INFORMATION:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Provider: ${consentData.insuranceProvider || 'Self-pay / HSA/FSA'}
-Member ID: ${consentData.insuranceMemberId || 'N/A'}
-Group Number: ${consentData.insuranceGroupNumber || 'N/A'}
-
-🔐 VERIFICATION & SECURITY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IP Address: ${req.ip}
-User Agent: ${req.get('user-agent')}
-Timestamp: ${new Date().toISOString()}
-
-╚════════════════════════════════════════════════════════════╝
+INSURANCE: ${consentData.insuranceProvider}
+MEMBER ID: ${consentData.insuranceMemberId}
+GROUP: ${consentData.insuranceGroupNumber}
         `;
 
         await squareClient.customersApi.updateCustomer(customerId, {
@@ -314,7 +215,6 @@ Timestamp: ${new Date().toISOString()}
         });
 
         console.log('✅ Consent forms saved for customer:', customerId);
-
         res.json({ success: true });
     } catch (error) {
         console.error('❌ Error saving consent:', error);
@@ -322,16 +222,11 @@ Timestamp: ${new Date().toISOString()}
     }
 });
 
-// Process payment with Square
 app.post('/api/process-payment', async (req, res) => {
     try {
         const { sourceId, amount, customerId, serviceId, appointmentDetails } = req.body;
 
-        console.log('💳 Processing payment:', { 
-            amount: `$${amount}`, 
-            customerId, 
-            service: appointmentDetails.serviceName 
-        });
+        console.log('💳 Processing payment:', { amount, customerId });
 
         const paymentResponse = await squareClient.paymentsApi.createPayment({
             sourceId: sourceId,
@@ -342,10 +237,10 @@ app.post('/api/process-payment', async (req, res) => {
             },
             customerId: customerId,
             locationId: LOCATION_ID,
-            note: `Telehealth: ${appointmentDetails.serviceName} - ${appointmentDetails.date} at ${appointmentDetails.time}`
+            note: `${appointmentDetails.serviceName} - ${appointmentDetails.date} at ${appointmentDetails.time}`
         });
 
-        console.log('✅ Payment successful! ID:', paymentResponse.result.payment.id);
+        console.log('✅ Payment successful:', paymentResponse.result.payment.id);
 
         res.json({ 
             success: true, 
@@ -362,27 +257,16 @@ app.post('/api/process-payment', async (req, res) => {
     }
 });
 
-// Create booking in Square (only after successful payment)
 app.post('/api/book', async (req, res) => {
     try {
-        const { 
-            customerId, 
-            startAt, 
-            serviceVariationId, 
-            paymentId, 
-            patientName, 
-            patientEmail, 
-            appointmentDetails 
-        } = req.body;
+        const { customerId, startAt, serviceVariationId, paymentId, patientName, patientEmail, appointmentDetails } = req.body;
 
-        console.log('📅 Creating booking in Square Calendar...');
+        console.log('📅 Creating booking:', { customerId, startAt });
 
-        // Get service details
         const catalogResponse = await squareClient.catalogApi.retrieveCatalogObject(serviceVariationId);
         const serviceVariation = catalogResponse.result.object;
         const durationMinutes = parseInt(serviceVariation.itemVariationData.serviceDuration) / 60000 || 60;
 
-        // Create booking in Square
         const bookingResponse = await squareClient.bookingsApi.createBooking({
             booking: {
                 customerId: customerId,
@@ -391,45 +275,28 @@ app.post('/api/book', async (req, res) => {
                 appointmentSegments: [{
                     durationMinutes: durationMinutes,
                     serviceVariationId: serviceVariationId,
-                    teamMemberId: 'TMpFuwQXkVSLNjOK', // Patrick Smith
+                    teamMemberId: 'TMpFuwQXkVSLNjOK',
                     serviceVariationVersion: BigInt(serviceVariation.version || 1)
                 }]
             }
         });
 
-        console.log('✅ Booking created! ID:', bookingResponse.result.booking.id);
+        console.log('✅ Booking created:', bookingResponse.result.booking.id);
 
-        // Generate appointment confirmation email
-        const emailContent = await generateAppointmentEmail(patientEmail, {
-            patientName: patientName,
-            date: appointmentDetails.date,
-            time: appointmentDetails.time,
-            serviceName: appointmentDetails.serviceName,
-            amount: req.body.amount
-        });
-
-        // Append appointment details to customer notes
         const appointmentNote = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 APPOINTMENT BOOKED: ${new Date().toLocaleString()}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+APPOINTMENT - ${new Date().toLocaleString()}
 Booking ID: ${bookingResponse.result.booking.id}
 Payment ID: ${paymentId}
-Amount Paid: $${req.body.amount}
+Amount: $${req.body.amount}
 
 Service: ${appointmentDetails.serviceName}
 Date: ${appointmentDetails.date}
 Time: ${appointmentDetails.time}
 
-💻 TELEHEALTH ROOM:
-Patient Link: ${DOXY_ROOM_URL}
-Provider Link: ${DOXY_ROOM_URL}/provider
-
-${emailContent}
+TELEHEALTH ROOM: ${DOXY_ROOM_URL}
+PROVIDER LINK: ${DOXY_ROOM_URL}/provider
         `;
 
-        // Update customer with appointment info
         const currentCustomer = await squareClient.customersApi.retrieveCustomer(customerId);
         const existingNote = currentCustomer.result.customer.note || '';
         
@@ -437,7 +304,7 @@ ${emailContent}
             note: existingNote + '\n\n' + appointmentNote
         });
 
-        console.log('✅ Appointment confirmation saved to customer record');
+        console.log('✅ Appointment details saved');
         
         res.json({ 
             success: true, 
@@ -455,7 +322,6 @@ ${emailContent}
     }
 });
 
-// Provider Portal - Login
 app.post('/api/provider/login', async (req, res) => {
     const { password } = req.body;
     
@@ -463,12 +329,11 @@ app.post('/api/provider/login', async (req, res) => {
         console.log('✅ Provider login successful');
         res.json({ success: true });
     } else {
-        console.log('❌ Provider login failed - invalid password');
+        console.log('❌ Provider login failed');
         res.status(401).json({ success: false, error: 'Invalid password' });
     }
 });
 
-// Provider Portal - Get all upcoming bookings
 app.get('/api/provider/bookings', async (req, res) => {
     try {
         const password = req.headers.authorization?.replace('Bearer ', '');
@@ -506,9 +371,8 @@ app.get('/api/provider/bookings', async (req, res) => {
                         customerName: `${customer.givenName || ''} ${customer.familyName || ''}`.trim(),
                         customerEmail: customer.emailAddress,
                         customerPhone: customer.phoneNumber,
-                        customerNotes: customer.note || 'No patient information available',
+                        customerNotes: customer.note || 'No notes',
                         status: booking.status,
-                        service: booking.appointmentSegments?.[0]?.serviceVariationId || 'Unknown',
                         doxyRoomUrl: DOXY_ROOM_URL,
                         providerLink: `${DOXY_ROOM_URL}/provider`
                     };
@@ -537,18 +401,16 @@ app.get('/api/provider/bookings', async (req, res) => {
     }
 });
 
-// ============================================
+// ========================================
 // STATIC FILES (MUST COME AFTER API ROUTES!)
-// ============================================
+// ========================================
 
 app.use(express.static(__dirname));
 
-// Serve index.html at root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Catch-all route
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api/')) {
         res.sendFile(path.join(__dirname, 'index.html'));
@@ -561,18 +423,18 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('');
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║     🏥 PJA WELLNESS TELEHEALTH PLATFORM                   ║');
-    console.log('╚════════════════════════════════════════════════════════════╝');
+    console.log('════════════════════════════════════════');
+    console.log('   🏥 PJA WELLNESS TELEHEALTH PLATFORM   ');
+    console.log('════════════════════════════════════════');
     console.log('');
     console.log(`✅ Server running on port: ${PORT}`);
     console.log(`✅ Environment: ${process.env.SQUARE_ENVIRONMENT || 'sandbox'}`);
     console.log(`✅ Location ID: ${LOCATION_ID}`);
-    console.log(`✅ Provider Portal: Enabled (password protected)`);
-    console.log(`✅ Payment Processing: Square Payments SDK`);
+    console.log(`✅ Provider Portal: Enabled`);
+    console.log(`✅ Payment Processing: Square`);
     console.log(`✅ Doxy.me Room: ${DOXY_ROOM_URL}`);
     console.log(`✅ Provider Link: ${DOXY_ROOM_URL}/provider`);
     console.log('');
-    console.log('Ready to accept telehealth appointments! 🚀');
+    console.log('Ready to accept appointments! 🚀');
     console.log('');
 });
