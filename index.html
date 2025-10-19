@@ -3,165 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PJA Wellness - Telehealth Consultation</title>
+    <title>PJA Wellness Management - Telehealth Services</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f8f9fb;
-            min-height: 100vh;
-            padding: 20px;
-            color: #1a2b3c;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
         }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
-            overflow: hidden;
-        }
-        
+
         .header {
             background: white;
-            border-bottom: 1px solid #e8edf2;
-            padding: 32px 40px;
-            text-align: center;
+            border-bottom: 1px solid #e1e8ed;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
-        
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
         .logo {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 12px;
         }
-        
+
         .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
-            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
         }
-        
-        .header h1 { 
-            font-size: 28px;
-            font-weight: 700;
-            color: #1a2b3c;
-            letter-spacing: -0.5px;
-            margin-bottom: 8px;
+
+        .logo-text h1 {
+            font-size: 20px;
+            color: #1a1a1a;
+            font-weight: 600;
         }
-        
-        .header p { 
-            color: #5a6c7d;
-            font-size: 15px;
-            font-weight: 500;
+
+        .logo-text p {
+            font-size: 13px;
+            color: #6c757d;
         }
-        
-        .credentials {
+
+        .trust-badges {
             display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #f0f3f7;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        
-        .credential-badge {
+
+        .trust-badge {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 13px;
-            color: #5a6c7d;
-            font-weight: 500;
-        }
-        
-        .credential-badge::before {
-            content: "✓";
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 50%;
-            font-weight: 700;
+            padding: 6px 12px;
+            background: #f0f7ff;
+            border-radius: 6px;
             font-size: 12px;
+            font-weight: 500;
+            color: #0066cc;
+            border: 1px solid #d1e7ff;
         }
-        
-        .content { padding: 40px; }
-        
-        .step {
-            display: none;
-            animation: fadeIn 0.4s ease;
+
+        .trust-badge-icon {
+            font-size: 14px;
         }
-        
-        .step.active { display: block; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
-        
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            font-size: 32px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            font-size: 16px;
+            color: #6c757d;
+        }
+
         .step-indicator {
             display: flex;
             justify-content: center;
-            gap: 8px;
             margin-bottom: 40px;
+            gap: 8px;
         }
-        
-        .step-dot {
-            width: 10px;
-            height: 10px;
+
+        .step {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: #e8edf2;
-            transition: all 0.3s;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
-        
-        .step-dot.active { 
+
+        .step.active {
             background: #0066cc;
-            width: 32px;
-            border-radius: 5px;
+            color: white;
+            transform: scale(1.1);
         }
-        
-        h2 {
-            color: #1a2b3c;
-            margin-bottom: 8px;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+
+        .step.completed {
+            background: #28a745;
+            color: white;
         }
-        
-        .section-subtitle {
-            color: #5a6c7d;
-            font-size: 15px;
-            margin-bottom: 32px;
-            line-height: 1.6;
-        }
-        
+
         .service-grid {
             display: grid;
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
         }
-        
+
         .service-card {
-            border: 2px solid #e8edf2;
-            border-radius: 16px;
+            background: white;
+            border-radius: 12px;
             padding: 24px;
             cursor: pointer;
-            transition: all 0.3s;
-            background: white;
+            transition: all 0.3s ease;
+            border: 2px solid #e1e8ed;
             position: relative;
             overflow: hidden;
         }
-        
+
         .service-card::before {
             content: '';
             position: absolute;
@@ -169,991 +170,978 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #0066cc, #004c99);
+            background: linear-gradient(90deg, #0066cc 0%, #004999 100%);
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
         }
-        
+
         .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,102,204,0.12);
             border-color: #0066cc;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 102, 204, 0.12);
         }
-        
+
         .service-card:hover::before {
             opacity: 1;
         }
-        
+
         .service-card.selected {
             border-color: #0066cc;
             background: #f0f7ff;
-            box-shadow: 0 4px 16px rgba(0, 102, 204, 0.15);
         }
-        
+
         .service-card.selected::before {
             opacity: 1;
         }
-        
-        .service-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .service-name {
-            font-size: 19px;
-            font-weight: 700;
-            color: #1a2b3c;
-            line-height: 1.3;
-        }
-        
-        .service-duration {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: #f0f3f7;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #5a6c7d;
-            white-space: nowrap;
-        }
-        
-        .service-description {
-            color: #5a6c7d;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 16px;
-        }
-        
-        .service-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 16px;
-            border-top: 1px solid #e8edf2;
-        }
-        
-        .service-price {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0066cc;
-            letter-spacing: -0.5px;
-        }
-        
+
         .hsa-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+            margin-bottom: 12px;
         }
-        
-        .form-group {
-            margin-bottom: 24px;
-        }
-        
-        label {
-            display: block;
+
+        .service-card h3 {
+            font-size: 18px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #1a2b3c;
+        }
+
+        .service-price {
+            font-size: 28px;
+            color: #0066cc;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .service-duration {
+            color: #6c757d;
             font-size: 14px;
+            margin-bottom: 16px;
         }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e8edf2;
-            border-radius: 12px;
-            font-size: 15px;
-            transition: all 0.3s;
-            font-family: inherit;
-            background: white;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #0066cc;
-            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
-        }
-        
-        textarea { 
-            min-height: 100px;
-            resize: vertical;
+
+        .service-description {
+            color: #495057;
+            font-size: 14px;
             line-height: 1.6;
         }
-        
-        .time-slot-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .time-slot {
-            padding: 14px;
-            border: 2px solid #e8edf2;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+
+        .form-section {
             background: white;
-            font-weight: 500;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #e1e8ed;
         }
-        
-        .time-slot:hover {
-            border-color: #0066cc;
-            background: #f0f7ff;
-        }
-        
-        .time-slot.selected {
-            background: #0066cc;
-            color: white;
-            border-color: #0066cc;
+
+        .form-section h3 {
+            font-size: 20px;
+            color: #1a1a1a;
+            margin-bottom: 20px;
             font-weight: 600;
         }
-        
-        .consent-box {
-            background: #f8f9fb;
-            border: 2px solid #e8edf2;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            max-height: 320px;
-            overflow-y: auto;
+
+        .form-group {
+            margin-bottom: 20px;
         }
-        
-        .consent-box h3 {
-            color: #0066cc;
-            margin-bottom: 16px;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        
-        .consent-box p {
-            margin-bottom: 14px;
-            line-height: 1.7;
-            color: #3d4f60;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
             font-size: 14px;
         }
-        
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
         .checkbox-group {
             display: flex;
-            align-items: flex-start;
+            align-items: start;
             gap: 12px;
-            margin-bottom: 20px;
             padding: 16px;
-            background: white;
-            border-radius: 12px;
-            border: 2px solid #e8edf2;
-            transition: border-color 0.3s;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 16px;
         }
-        
-        .checkbox-group:has(input:checked) {
-            border-color: #0066cc;
-            background: #f0f7ff;
-        }
-        
+
         .checkbox-group input[type="checkbox"] {
             width: 20px;
             height: 20px;
             margin-top: 2px;
             cursor: pointer;
-            flex-shrink: 0;
         }
-        
+
         .checkbox-group label {
+            flex: 1;
             margin: 0;
             cursor: pointer;
-            font-weight: 500;
+            font-size: 14px;
+            line-height: 1.6;
         }
-        
-        .button-group {
-            display: flex;
-            gap: 12px;
-            justify-content: space-between;
-            margin-top: 32px;
-        }
-        
-        button {
-            flex: 1;
-            padding: 16px 32px;
+
+        .btn {
+            padding: 14px 32px;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        
+
         .btn-primary {
-            background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
+            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
             color: white;
-            box-shadow: 0 4px 14px rgba(0, 102, 204, 0.3);
         }
-        
-        .btn-primary:hover:not(:disabled) {
+
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+            box-shadow: 0 6px 20px rgba(0,102,204,0.3);
         }
-        
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
+
         .btn-secondary {
-            background: #f0f3f7;
-            color: #1a2b3c;
+            background: white;
+            color: #0066cc;
+            border: 2px solid #0066cc;
         }
-        
-        .btn-secondary:hover { 
-            background: #e8edf2;
+
+        .btn-secondary:hover {
+            background: #f0f7ff;
         }
-        
-        .success-message {
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .time-slot {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            cursor: pointer;
             text-align: center;
-            padding: 48px 32px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
         }
-        
+
+        .time-slot:hover {
+            border-color: #0066cc;
+            background: #f0f7ff;
+        }
+
+        .time-slot.selected {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f7ff;
+            border-top-color: #0066cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
         .success-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 24px;
             font-size: 40px;
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
         }
-        
-        .success-message h2 {
-            color: #1a2b3c;
+
+        .success-screen h2 {
+            font-size: 28px;
+            color: #1a1a1a;
             margin-bottom: 12px;
         }
-        
-        .success-message p {
-            color: #5a6c7d;
-            line-height: 1.7;
-            margin-bottom: 12px;
+
+        .success-screen p {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 32px;
         }
-        
-        .booking-id {
-            background: #f8f9fb;
-            padding: 16px;
-            border-radius: 12px;
-            font-family: 'Courier New', monospace;
-            color: #0066cc;
-            font-weight: 600;
-            margin: 24px 0;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 32px;
-            color: #0066cc;
-        }
-        
-        .loading::after {
-            content: '';
-            display: block;
-            width: 40px;
-            height: 40px;
-            margin: 20px auto 0;
-            border: 4px solid #e8edf2;
-            border-top-color: #0066cc;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .error {
-            background: #fef2f2;
-            color: #991b1b;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 2px solid #fee2e2;
-        }
-        
+
         .provider-toggle {
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
+            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
             color: white;
-            padding: 16px 28px;
+            padding: 16px 24px;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(0, 102, 204, 0.3);
+            box-shadow: 0 6px 20px rgba(0,102,204,0.3);
             z-index: 1000;
             font-weight: 600;
-            font-size: 15px;
-            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s ease;
         }
-        
+
         .provider-toggle:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(0, 102, 204, 0.4);
+            box-shadow: 0 8px 24px rgba(0,102,204,0.4);
         }
-        
+
         .provider-portal {
-            display: none;
-        }
-        
-        .provider-portal.active {
-            display: block;
-        }
-        
-        .bookings-grid {
-            display: grid;
-            gap: 16px;
-            margin-top: 24px;
-        }
-        
-        .booking-card {
-            border: 2px solid #e8edf2;
-            border-radius: 16px;
-            padding: 24px;
             background: white;
-            transition: all 0.3s;
-        }
-        
-        .booking-card:hover {
-            border-color: #0066cc;
-            box-shadow: 0 4px 16px rgba(0, 102, 204, 0.08);
-        }
-        
-        .booking-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f3f7;
-        }
-        
-        .booking-time {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a2b3c;
-        }
-        
-        .booking-service {
-            font-size: 14px;
-            color: #5a6c7d;
-            margin-top: 4px;
-        }
-        
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .patient-info {
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #3d4f60;
-        }
-        
-        .patient-info strong {
-            color: #1a2b3c;
-            font-weight: 600;
-            margin-right: 8px;
-        }
-        
-        .health-notes {
-            background: #f8f9fb;
-            padding: 20px;
             border-radius: 12px;
-            margin-top: 20px;
+            padding: 32px;
+            margin-bottom: 40px;
+            border: 1px solid #e1e8ed;
         }
-        
-        .health-notes h4 {
-            color: #0066cc;
+
+        .booking-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .booking-card h4 {
+            color: #1a1a1a;
             margin-bottom: 12px;
             font-size: 16px;
-            font-weight: 700;
         }
-        
-        .health-notes pre {
-            white-space: pre-wrap;
-            font-family: inherit;
-            font-size: 13px;
-            line-height: 1.7;
-            color: #3d4f60;
+
+        .booking-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .booking-info-item {
+            font-size: 14px;
+        }
+
+        .booking-info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .booking-info-value {
+            color: #6c757d;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .hidden {
+            display: none;
         }
 
         @media (max-width: 768px) {
-            body { padding: 12px; }
-            .content { padding: 24px; }
-            .header { padding: 24px 20px; }
-            .header h1 { font-size: 24px; }
-            .credentials { flex-direction: column; gap: 12px; align-items: center; }
-            .service-header { flex-direction: column; gap: 12px; }
-            .time-slot-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-            .provider-toggle { bottom: 16px; right: 16px; padding: 14px 20px; font-size: 14px; }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .trust-badges {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Patient Booking Portal -->
-    <div id="patientPortal" class="container">
-        <div class="header">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
             <div class="logo">
-                <div class="logo-icon">🌿</div>
+                <div class="logo-icon">PJA</div>
+                <div class="logo-text">
+                    <h1>PJA Wellness Management</h1>
+                    <p>Board Certified Holistic Health Care</p>
+                </div>
             </div>
-            <h1>PJA Wellness Management</h1>
-            <p>Secure Telehealth Consultation with Board Certified Practitioners</p>
-            <div class="credentials">
-                <div class="credential-badge">HIPAA Compliant</div>
-                <div class="credential-badge">Board Certified</div>
-                <div class="credential-badge">HSA/FSA Accepted</div>
+            <div class="trust-badges">
+                <div class="trust-badge">
+                    <span class="trust-badge-icon">🔒</span>
+                    <span>HIPAA Compliant</span>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-badge-icon">✓</span>
+                    <span>Board Certified</span>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-badge-icon">💳</span>
+                    <span>HSA/FSA Accepted</span>
+                </div>
             </div>
         </div>
-        
-        <div class="content">
-            <div class="step-indicator">
-                <div class="step-dot active"></div>
-                <div class="step-dot"></div>
-                <div class="step-dot"></div>
-                <div class="step-dot"></div>
-                <div class="step-dot"></div>
-                <div class="step-dot"></div>
-            </div>
-            
-            <!-- Step 1: Service Selection -->
-            <div id="step1" class="step active">
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+            <div class="step" id="step4">4</div>
+            <div class="step" id="step5">5</div>
+            <div class="step" id="step6">6</div>
+        </div>
+
+        <!-- Step 1: Service Selection -->
+        <div id="serviceSelection" class="step-content">
+            <div class="section-header">
                 <h2>Choose Your Service</h2>
-                <p class="section-subtitle">Select the consultation type that best fits your needs</p>
-                <div class="service-grid">
-                    <div class="service-card" onclick="selectService('Comprehensive Wellness Visit')">
-                        <div class="service-header">
-                            <div class="service-name">Comprehensive Wellness Visit</div>
-                            <div class="service-duration">⏱ 45 min</div>
-                        </div>
-                        <div class="service-description">Complete health assessment and personalized wellness plan with Board Certified Holistic Health Practitioner Patrick Smith</div>
-                        <div class="service-footer">
-                            <div class="service-price">$99</div>
-                            <div class="hsa-badge">✓ HSA/FSA</div>
-                        </div>
+                <p>Select the telehealth consultation that best fits your needs</p>
+            </div>
+
+            <div class="service-grid">
+                <div class="service-card" onclick="selectService('Comprehensive Wellness Visit', 99, 45)">
+                    <div class="hsa-badge">
+                        <span>✓</span>
+                        <span>HSA/FSA Accepted</span>
                     </div>
-                    <div class="service-card" onclick="selectService('Follow-up Consultation')">
-                        <div class="service-header">
-                            <div class="service-name">Follow-up Consultation</div>
-                            <div class="service-duration">⏱ 30 min</div>
-                        </div>
-                        <div class="service-description">Progress check-in and treatment plan adjustments with your wellness practitioner</div>
-                        <div class="service-footer">
-                            <div class="service-price">$75</div>
-                            <div class="hsa-badge">✓ HSA/FSA</div>
-                        </div>
-                    </div>
-                    <div class="service-card" onclick="selectService('Acute Care Visit')">
-                        <div class="service-header">
-                            <div class="service-name">Acute Care Visit</div>
-                            <div class="service-duration">⏱ 20 min</div>
-                        </div>
-                        <div class="service-description">Immediate assessment for urgent concerns and acute symptoms</div>
-                        <div class="service-footer">
-                            <div class="service-price">$50</div>
-                            <div class="hsa-badge">✓ HSA/FSA</div>
-                        </div>
-                    </div>
+                    <h3>Comprehensive Wellness Visit</h3>
+                    <div class="service-price">$99</div>
+                    <div class="service-duration">45 minutes</div>
+                    <p class="service-description">Complete health assessment with personalized wellness plan. Ideal for new patients or comprehensive health reviews.</p>
                 </div>
-                <div class="button-group">
-                    <button class="btn-primary" onclick="nextStep()" disabled id="step1NextBtn">Continue to Booking</button>
+
+                <div class="service-card" onclick="selectService('Follow-up Consultation', 75, 30)">
+                    <div class="hsa-badge">
+                        <span>✓</span>
+                        <span>HSA/FSA Accepted</span>
+                    </div>
+                    <h3>Follow-up Consultation</h3>
+                    <div class="service-price">$75</div>
+                    <div class="service-duration">30 minutes</div>
+                    <p class="service-description">Progress check-in and treatment plan adjustments. Perfect for ongoing care and monitoring.</p>
+                </div>
+
+                <div class="service-card" onclick="selectService('Acute Care Visit', 50, 20)">
+                    <div class="hsa-badge">
+                        <span>✓</span>
+                        <span>HSA/FSA Accepted</span>
+                    </div>
+                    <h3>Acute Care Visit</h3>
+                    <div class="service-price">$50</div>
+                    <div class="service-duration">20 minutes</div>
+                    <p class="service-description">Quick consultation for immediate concerns and acute symptoms. Fast, focused care when you need it.</p>
                 </div>
             </div>
-            
-            <!-- Step 2: Personal Info -->
-            <div id="step2" class="step">
-                <h2>Your Information</h2>
-                <p class="section-subtitle">Please provide your contact details for appointment confirmation</p>
-                <div class="form-group">
-                    <label>First Name *</label>
-                    <input type="text" id="firstName" placeholder="Enter your first name" required>
+        </div>
+
+        <!-- Step 2: Personal Information -->
+        <div id="personalInfo" class="step-content hidden">
+            <div class="section-header">
+                <h2>Personal Information</h2>
+                <p>Please provide your contact details</p>
+            </div>
+
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="lastName" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Last Name *</label>
-                    <input type="text" id="lastName" placeholder="Enter your last name" required>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="phone" required>
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label>Date of Birth *</label>
                     <input type="date" id="dob" required>
                 </div>
-                <div class="form-group">
-                    <label>Email Address *</label>
-                    <input type="email" id="email" placeholder="your.email@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" id="phone" placeholder="(123) 456-7890" required>
-                </div>
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="prevStep()">Back</button>
-                    <button class="btn-primary" onclick="nextStep()">Continue</button>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep('serviceSelection')">← Back</button>
+                    <button class="btn btn-primary" onclick="savePersonalInfo()">Continue →</button>
                 </div>
             </div>
-            
-            <!-- Step 3: Health Information -->
-            <div id="step3" class="step">
+        </div>
+
+        <!-- Step 3: Health Information -->
+        <div id="healthInfo" class="step-content hidden">
+            <div class="section-header">
                 <h2>Health Information</h2>
-                <p class="section-subtitle">Help us understand your current health concerns</p>
+                <p>Help us understand your health needs</p>
+            </div>
+
+            <div class="form-section">
                 <div class="form-group">
                     <label>Primary Concern *</label>
-                    <input type="text" id="primaryConcern" placeholder="What brings you in today?" required>
+                    <input type="text" id="primaryConcern" placeholder="What brings you here today?" required>
                 </div>
+
                 <div class="form-group">
-                    <label>Symptoms *</label>
-                    <textarea id="symptoms" placeholder="Please describe your symptoms in detail" required></textarea>
+                    <label>Current Symptoms *</label>
+                    <textarea id="symptoms" placeholder="Describe your symptoms in detail..." required></textarea>
                 </div>
-                <div class="form-group">
-                    <label>Duration *</label>
-                    <select id="duration" required>
-                        <option value="">How long have you experienced this?</option>
-                        <option value="Less than 1 week">Less than 1 week</option>
-                        <option value="1-2 weeks">1-2 weeks</option>
-                        <option value="2-4 weeks">2-4 weeks</option>
-                        <option value="1-3 months">1-3 months</option>
-                        <option value="More than 3 months">More than 3 months</option>
-                    </select>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>How long have you had these symptoms? *</label>
+                        <select id="duration" required>
+                            <option value="">Select duration</option>
+                            <option value="less-than-week">Less than a week</option>
+                            <option value="1-2-weeks">1-2 weeks</option>
+                            <option value="2-4-weeks">2-4 weeks</option>
+                            <option value="1-3-months">1-3 months</option>
+                            <option value="more-than-3-months">More than 3 months</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Symptom Severity *</label>
+                        <select id="severity" required>
+                            <option value="">Select severity</option>
+                            <option value="mild">Mild</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Severity (1-10) *</label>
-                    <input type="number" id="severity" min="1" max="10" placeholder="Rate from 1 (mild) to 10 (severe)" required>
-                </div>
+
                 <div class="form-group">
                     <label>Current Medications</label>
-                    <textarea id="medications" placeholder="List any medications you're currently taking"></textarea>
+                    <textarea id="medications" placeholder="List any medications you're currently taking (or write 'None')"></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>Known Allergies</label>
-                    <textarea id="allergies" placeholder="List any known allergies"></textarea>
+                    <label>Allergies</label>
+                    <textarea id="allergies" placeholder="List any allergies (or write 'None')"></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>Medical History</label>
-                    <textarea id="medicalHistory" placeholder="Brief medical history (previous conditions, surgeries, etc.)"></textarea>
+                    <label>Relevant Medical History</label>
+                    <textarea id="medicalHistory" placeholder="Any relevant medical conditions or past treatments..."></textarea>
                 </div>
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="prevStep()">Back</button>
-                    <button class="btn-primary" onclick="nextStep()">Continue</button>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep('personalInfo')">← Back</button>
+                    <button class="btn btn-primary" onclick="saveHealthInfo()">Continue →</button>
                 </div>
             </div>
-            
-            <!-- Step 4: Consent Forms -->
-            <div id="step4" class="step">
-                <h2>Consent & Agreement</h2>
-                <p class="section-subtitle">Please review and agree to the following</p>
-                
-                <div class="consent-box">
-                    <h3>HIPAA Privacy Notice</h3>
-                    <p><strong>Your Health Information Rights:</strong> You have the right to request restrictions on uses and disclosures of your protected health information, inspect and obtain copies of your health records, and request amendments to your health information.</p>
-                    
-                    <p><strong>Our Responsibilities:</strong> We are required by law to maintain the privacy of your protected health information and provide you with notice of our legal duties and privacy practices. We will not use or disclose your health information without your written authorization, except as described in this notice.</p>
-                    
-                    <p><strong>How We Use Your Information:</strong> We may use and disclose your health information for treatment, payment, and healthcare operations. We may also share information with other healthcare providers involved in your care, process insurance claims, and conduct quality improvement activities.</p>
-                    
-                    <p><strong>Your Privacy:</strong> We maintain physical, electronic, and procedural safeguards to protect your health information. Access to your information is limited to authorized personnel only.</p>
-                </div>
-                
+        </div>
+
+        <!-- Step 4: Consent Forms -->
+        <div id="consentForms" class="step-content hidden">
+            <div class="section-header">
+                <h2>Consent Forms</h2>
+                <p>Please review and agree to the following</p>
+            </div>
+
+            <div class="form-section">
                 <div class="checkbox-group">
-                    <input type="checkbox" id="hipaaConsent">
-                    <label for="hipaaConsent">I have read and agree to the HIPAA Privacy Notice</label>
+                    <input type="checkbox" id="hipaaConsent" required>
+                    <label for="hipaaConsent">
+                        <strong>HIPAA Authorization:</strong> I authorize PJA Wellness Management to use and disclose my protected health information for treatment, payment, and healthcare operations as described in the Notice of Privacy Practices.
+                    </label>
                 </div>
-                
-                <div class="consent-box">
-                    <h3>Telehealth Informed Consent</h3>
-                    <p><strong>Nature of Telehealth:</strong> Telehealth involves the use of electronic communications to enable healthcare providers at different locations to share patient medical information for diagnosis, therapy, follow-up, and education.</p>
-                    
-                    <p><strong>Benefits:</strong> Improved access to medical care by enabling you to remain at home while consulting with your healthcare provider. More efficient medical evaluation and management.</p>
-                    
-                    <p><strong>Risks:</strong> As with any medical procedure, there are potential risks including technical difficulties, information transmission delays, or security protocol failures. In rare cases, lack of access to complete medical records may result in adverse drug interactions or allergic reactions.</p>
-                    
-                    <p><strong>Security:</strong> We use industry-standard encryption and security protocols to protect your privacy. However, no system can guarantee complete security.</p>
-                    
-                    <p><strong>Emergency Situations:</strong> In case of emergency, call 911 immediately. Telehealth is not appropriate for emergency situations.</p>
-                    
-                    <p><strong>Payment:</strong> You are responsible for payment at the time of service. Services may be eligible for HSA/FSA reimbursement.</p>
-                    
-                    <p><strong>Right to Withdraw:</strong> You may withdraw consent and discontinue telehealth services at any time without affecting your right to future care.</p>
-                </div>
-                
+
                 <div class="checkbox-group">
-                    <input type="checkbox" id="telehealthConsent">
-                    <label for="telehealthConsent">I have read and agree to the Telehealth Informed Consent</label>
+                    <input type="checkbox" id="telehealthConsent" required>
+                    <label for="telehealthConsent">
+                        <strong>Telehealth Consent:</strong> I understand that this telehealth visit involves the use of electronic communications to enable healthcare providers at different locations to share individual patient medical information for diagnosis and treatment. I consent to participate in telehealth services and understand the potential risks, benefits, and alternatives.
+                    </label>
                 </div>
-                
+
                 <div class="form-group">
-                    <label>Electronic Signature (Type your full name) *</label>
-                    <input type="text" id="signature" placeholder="Your Full Legal Name" required>
+                    <label>Electronic Signature *</label>
+                    <input type="text" id="signature" placeholder="Type your full name as signature" required>
                 </div>
-                
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="prevStep()">Back</button>
-                    <button class="btn-primary" onclick="nextStep()">Continue</button>
-                </div>
-            </div>
-            
-            <!-- Step 5: Select Appointment Time -->
-            <div id="step5" class="step">
-                <h2>Select Appointment Time</h2>
-                <p class="section-subtitle">Choose a time that works best for you</p>
-                <div id="loadingSlots" class="loading">
-                    <p>Loading available times...</p>
-                </div>
-                <div id="timeSlots" class="time-slot-grid"></div>
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="prevStep()">Back</button>
-                    <button class="btn-primary" onclick="nextStep()" disabled id="step5NextBtn">Confirm Booking</button>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep('healthInfo')">← Back</button>
+                    <button class="btn btn-primary" onclick="saveConsent()">Continue →</button>
                 </div>
             </div>
-            
-            <!-- Step 6: Confirmation -->
-            <div id="step6" class="step">
-                <div id="bookingResult"></div>
+        </div>
+
+        <!-- Step 5: Schedule Appointment -->
+        <div id="scheduleAppointment" class="step-content hidden">
+            <div class="section-header">
+                <h2>Schedule Your Appointment</h2>
+                <p>Select a convenient time for your consultation</p>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label>Select Date *</label>
+                    <input type="date" id="appointmentDate" onchange="loadAvailability()">
+                </div>
+
+                <div id="timeSlots"></div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep('consentForms')">← Back</button>
+                    <button class="btn btn-primary" id="confirmBookingBtn" disabled onclick="confirmBooking()">Confirm Booking →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Loading/Success -->
+        <div id="loadingScreen" class="step-content hidden">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <h2>Processing Your Booking...</h2>
+                <p>Please wait while we confirm your appointment</p>
+            </div>
+        </div>
+
+        <div id="successScreen" class="step-content hidden">
+            <div class="success-screen">
+                <div class="success-icon">✓</div>
+                <h2>Appointment Confirmed!</h2>
+                <p>You will receive a confirmation email shortly with appointment details and a video call link.</p>
+                <button class="btn btn-primary" onclick="location.reload()">Book Another Appointment</button>
             </div>
         </div>
     </div>
-    
+
     <!-- Provider Portal Toggle -->
     <div class="provider-toggle" onclick="toggleProviderPortal()">
         <span>👨‍⚕️</span>
         <span>Provider Portal</span>
     </div>
-    
+
     <!-- Provider Portal -->
-    <div id="providerPortal" class="provider-portal container">
-        <div class="header">
-            <h1>👨‍⚕️ Provider Portal</h1>
-            <p>Upcoming Telehealth Appointments</p>
+    <div id="providerPortal" class="provider-portal container hidden">
+        <div class="section-header">
+            <h2>Provider Portal</h2>
+            <p>View all upcoming appointments and patient information</p>
         </div>
-        
-        <div class="content">
-            <button class="btn-primary" onclick="toggleProviderPortal()" style="margin-bottom: 24px;">Back to Patient Portal</button>
-            <div id="loadingBookings" class="loading">
-                <p>Loading appointments...</p>
-            </div>
-            <div id="bookingsList" class="bookings-grid"></div>
-        </div>
+
+        <button class="btn btn-secondary" onclick="toggleProviderPortal()" style="margin-bottom: 20px;">← Close Portal</button>
+
+        <div id="bookingsList"></div>
     </div>
 
     <script>
-        const API_BASE = window.location.origin;
-        let currentStep = 1;
+        // Global state
         let bookingData = {
             selectedService: null,
-            serviceId: null,
+            selectedPrice: null,
+            selectedDuration: null,
             customerInfo: {},
             healthInfo: {},
             consent: {},
             selectedTime: null
         };
-        
+
         const SERVICE_IDS = {
             'Comprehensive Wellness Visit': 'EOS5TK4VKO6YGM4TYUFMXO2W',
             'Follow-up Consultation': 'KOGODBCXVOKARIL3YZ5DVSKS',
             'Acute Care Visit': '45HRDI4XGITSL4SYOKJKYNK4'
         };
-        
-        function selectService(serviceName) {
+
+        // Service Selection
+        function selectService(name, price, duration) {
+            bookingData.selectedService = name;
+            bookingData.selectedPrice = price;
+            bookingData.selectedDuration = duration;
+            
             document.querySelectorAll('.service-card').forEach(card => {
                 card.classList.remove('selected');
             });
             event.currentTarget.classList.add('selected');
             
-            bookingData.selectedService = serviceName;
-            bookingData.serviceId = SERVICE_IDS[serviceName];
-            document.getElementById('step1NextBtn').disabled = false;
+            setTimeout(() => {
+                goToStep('personalInfo');
+                updateSteps(2);
+            }, 300);
         }
-        
-        function nextStep() {
-            if (!validateStep(currentStep)) return;
-            
-            if (currentStep === 4) {
-                loadAvailability();
-            }
-            
-            if (currentStep === 5) {
-                submitBooking();
+
+        // Personal Info
+        function savePersonalInfo() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const dob = document.getElementById('dob').value;
+
+            if (!firstName || !lastName || !email || !phone || !dob) {
+                alert('Please fill in all required fields');
                 return;
             }
-            
-            currentStep++;
-            updateStepDisplay();
+
+            bookingData.customerInfo = { firstName, lastName, email, phone, dob };
+            goToStep('healthInfo');
+            updateSteps(3);
         }
-        
-        function prevStep() {
-            currentStep--;
-            updateStepDisplay();
+
+        // Health Info
+        function saveHealthInfo() {
+            const primaryConcern = document.getElementById('primaryConcern').value;
+            const symptoms = document.getElementById('symptoms').value;
+            const duration = document.getElementById('duration').value;
+            const severity = document.getElementById('severity').value;
+            const medications = document.getElementById('medications').value || 'None';
+            const allergies = document.getElementById('allergies').value || 'None';
+            const medicalHistory = document.getElementById('medicalHistory').value || 'None provided';
+
+            if (!primaryConcern || !symptoms || !duration || !severity) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            bookingData.healthInfo = {
+                primaryConcern,
+                symptoms,
+                duration,
+                severity,
+                medications,
+                allergies,
+                medicalHistory
+            };
+
+            goToStep('consentForms');
+            updateSteps(4);
         }
-        
-        function updateStepDisplay() {
-            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
-            document.getElementById(`step${currentStep}`).classList.add('active');
+
+        // Consent
+        function saveConsent() {
+            const hipaa = document.getElementById('hipaaConsent').checked;
+            const telehealth = document.getElementById('telehealthConsent').checked;
+            const signature = document.getElementById('signature').value;
+
+            if (!hipaa || !telehealth || !signature) {
+                alert('Please agree to all consent forms and provide your signature');
+                return;
+            }
+
+            bookingData.consent = {
+                hipaa,
+                telehealth,
+                signature,
+                date: new Date().toISOString()
+            };
+
+            goToStep('scheduleAppointment');
+            updateSteps(5);
             
-            document.querySelectorAll('.step-dot').forEach((dot, index) => {
-                dot.classList.toggle('active', index < currentStep);
-            });
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('appointmentDate').setAttribute('min', today);
         }
-        
-        function validateStep(step) {
-            if (step === 1) {
-                return bookingData.selectedService !== null;
-            }
-            
-            if (step === 2) {
-                const firstName = document.getElementById('firstName').value.trim();
-                const lastName = document.getElementById('lastName').value.trim();
-                const dob = document.getElementById('dob').value;
-                const email = document.getElementById('email').value.trim();
-                const phone = document.getElementById('phone').value.trim();
-                
-                if (!firstName || !lastName || !dob || !email || !phone) {
-                    alert('Please fill in all required fields');
-                    return false;
-                }
-                
-                bookingData.customerInfo = { firstName, lastName, dob, email, phone };
-                return true;
-            }
-            
-            if (step === 3) {
-                const primaryConcern = document.getElementById('primaryConcern').value.trim();
-                const symptoms = document.getElementById('symptoms').value.trim();
-                const duration = document.getElementById('duration').value;
-                const severity = document.getElementById('severity').value;
-                
-                if (!primaryConcern || !symptoms || !duration || !severity) {
-                    alert('Please fill in all required fields');
-                    return false;
-                }
-                
-                bookingData.healthInfo = {
-                    primaryConcern,
-                    symptoms,
-                    duration,
-                    severity,
-                    medications: document.getElementById('medications').value.trim(),
-                    allergies: document.getElementById('allergies').value.trim(),
-                    medicalHistory: document.getElementById('medicalHistory').value.trim()
-                };
-                return true;
-            }
-            
-            if (step === 4) {
-                const hipaa = document.getElementById('hipaaConsent').checked;
-                const telehealth = document.getElementById('telehealthConsent').checked;
-                const signature = document.getElementById('signature').value.trim();
-                
-                if (!hipaa || !telehealth || !signature) {
-                    alert('Please agree to all consent forms and provide your signature');
-                    return false;
-                }
-                
-                bookingData.consent = { hipaa, telehealth, signature };
-                return true;
-            }
-            
-            if (step === 5) {
-                return bookingData.selectedTime !== null;
-            }
-            
-            return true;
-        }
-        
+
+        // Load Availability
         async function loadAvailability() {
-            const loadingEl = document.getElementById('loadingSlots');
-            const slotsEl = document.getElementById('timeSlots');
-            
-            loadingEl.style.display = 'block';
-            slotsEl.innerHTML = '';
-            
+            const date = document.getElementById('appointmentDate').value;
+            if (!date) return;
+
+            const timeSlotsContainer = document.getElementById('timeSlots');
+            timeSlotsContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading available times...</p></div>';
+
             try {
-                const response = await fetch(`${API_BASE}/api/availability`, {
+                const serviceId = SERVICE_IDS[bookingData.selectedService];
+                const response = await fetch('/api/availability', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ serviceId: bookingData.serviceId })
+                    body: JSON.stringify({ serviceId })
                 });
-                
+
                 const data = await response.json();
-                loadingEl.style.display = 'none';
                 
                 if (data.availabilities && data.availabilities.length > 0) {
-                    data.availabilities.forEach(slot => {
-                        const slotEl = document.createElement('div');
-                        slotEl.className = 'time-slot';
-                        
-                        const date = new Date(slot.startAt);
-                        slotEl.innerHTML = `
-                            <div><strong>${date.toLocaleDateString()}</strong></div>
-                            <div>${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                        `;
-                        
-                        slotEl.onclick = () => selectTimeSlot(slot.startAt, slotEl);
-                        slotsEl.appendChild(slotEl);
+                    const selectedDate = new Date(date);
+                    const filteredSlots = data.availabilities.filter(slot => {
+                        const slotDate = new Date(slot.startAt);
+                        return slotDate.toDateString() === selectedDate.toDateString();
                     });
+
+                    displayTimeSlots(filteredSlots);
                 } else {
-                    slotsEl.innerHTML = '<div class="error">No available slots found. Please contact the office.</div>';
+                    timeSlotsContainer.innerHTML = '<p style="text-align:center;color:#6c757d;">No available times for this date. Please try another date.</p>';
                 }
             } catch (error) {
-                loadingEl.style.display = 'none';
-                slotsEl.innerHTML = `<div class="error">Failed to load availability: ${error.message}</div>`;
+                console.error('Error loading availability:', error);
+                timeSlotsContainer.innerHTML = '<p style="text-align:center;color:#dc3545;">Error loading availability. Please try again.</p>';
             }
         }
-        
-        function selectTimeSlot(time, element) {
+
+        function displayTimeSlots(slots) {
+            const container = document.getElementById('timeSlots');
+            
+            if (slots.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#6c757d;">No available times for this date.</p>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'time-grid';
+
+            slots.forEach(slot => {
+                const time = new Date(slot.startAt);
+                const timeStr = time.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+
+                const button = document.createElement('div');
+                button.className = 'time-slot';
+                button.textContent = timeStr;
+                button.onclick = () => selectTime(slot.startAt, button);
+                grid.appendChild(button);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        function selectTime(time, element) {
             document.querySelectorAll('.time-slot').forEach(slot => {
                 slot.classList.remove('selected');
             });
             element.classList.add('selected');
             bookingData.selectedTime = time;
-            document.getElementById('step5NextBtn').disabled = false;
+            document.getElementById('confirmBookingBtn').disabled = false;
         }
-        
-        async function submitBooking() {
-            const resultEl = document.getElementById('bookingResult');
-            resultEl.innerHTML = '<div class="loading"><p>Creating your appointment...</p></div>';
-            
+
+        // Confirm Booking
+        async function confirmBooking() {
+            if (!bookingData.selectedTime) {
+                alert('Please select a time slot');
+                return;
+            }
+
+            goToStep('loadingScreen');
+            updateSteps(6);
+
             try {
-                const response = await fetch(`${API_BASE}/api/booking`, {
+                const response = await fetch('/api/booking', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bookingData)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    resultEl.innerHTML = `
-                        <div class="success-message">
-                            <div class="success-icon">✓</div>
-                            <h2>Appointment Confirmed!</h2>
-                            <p>Your telehealth appointment has been successfully scheduled.</p>
-                            <div class="booking-id">Booking ID: ${result.bookingId}</div>
-                            <p>You will receive a confirmation email with your appointment details and secure video link.</p>
-                            <button class="btn-primary" onclick="location.reload()" style="margin-top: 24px;">Book Another Appointment</button>
-                        </div>
-                    `;
+                    goToStep('successScreen');
                 } else {
-                    resultEl.innerHTML = `
-                        <div class="error">
-                            <h3>Booking Failed</h3>
-                            <p>${result.error || 'An error occurred'}</p>
-                            <button class="btn-primary" onclick="prevStep()">Go Back</button>
-                        </div>
-                    `;
+                    alert('Booking failed: ' + (result.details || result.error));
+                    goToStep('scheduleAppointment');
+                    updateSteps(5);
                 }
             } catch (error) {
-                resultEl.innerHTML = `
-                    <div class="error">
-                        <h3>Booking Failed</h3>
-                        <p>Please call our office: (586) 557-2224</p>
-                        <button class="btn-primary" onclick="prevStep()">Go Back</button>
-                    </div>
-                `;
+                console.error('Booking error:', error);
+                alert('An error occurred. Please try again.');
+                goToStep('scheduleAppointment');
+                updateSteps(5);
             }
         }
-        
-        async function toggleProviderPortal() {
-            const patientPortal = document.getElementById('patientPortal');
-            const providerPortal = document.getElementById('providerPortal');
+
+        // Provider Portal
+        function toggleProviderPortal() {
+            const portal = document.getElementById('providerPortal');
+            const isHidden = portal.classList.contains('hidden');
             
-            if (providerPortal.classList.contains('active')) {
-                providerPortal.classList.remove('active');
-                patientPortal.style.display = 'block';
-            } else {
-                providerPortal.classList.add('active');
-                patientPortal.style.display = 'none';
+            if (isHidden) {
                 loadBookings();
+                portal.classList.remove('hidden');
+                document.querySelector('.container').style.display = 'none';
+            } else {
+                portal.classList.add('hidden');
+                document.querySelector('.container').style.display = 'block';
             }
         }
-        
+
         async function loadBookings() {
-            const loadingEl = document.getElementById('loadingBookings');
-            const bookingsEl = document.getElementById('bookingsList');
-            
-            loadingEl.style.display = 'block';
-            bookingsEl.innerHTML = '';
-            
+            const container = document.getElementById('bookingsList');
+            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading appointments...</p></div>';
+
             try {
-                const response = await fetch(`${API_BASE}/api/bookings`);
+                const response = await fetch('/api/bookings');
                 const data = await response.json();
-                
-                loadingEl.style.display = 'none';
-                
+
                 if (data.bookings && data.bookings.length > 0) {
-                    data.bookings.forEach(booking => {
-                        const bookingCard = createBookingCard(booking);
-                        bookingsEl.appendChild(bookingCard);
-                    });
+                    displayBookings(data.bookings);
                 } else {
-                    bookingsEl.innerHTML = '<p>No upcoming appointments</p>';
+                    container.innerHTML = '<p style="text-align:center;color:#6c757d;">No upcoming appointments</p>';
                 }
             } catch (error) {
-                loadingEl.style.display = 'none';
-                bookingsEl.innerHTML = `<div class="error">Failed to load bookings: ${error.message}</div>`;
+                console.error('Error loading bookings:', error);
+                container.innerHTML = '<p style="text-align:center;color:#dc3545;">Error loading appointments</p>';
             }
         }
-        
-        function createBookingCard(booking) {
-            const card = document.createElement('div');
-            card.className = 'booking-card';
-            
-            const startTime = new Date(booking.startAt);
-            const customer = booking.customerDetails;
-            
-            card.innerHTML = `
-                <div class="booking-header">
-                    <div>
-                        <div class="booking-time">${startTime.toLocaleString()}</div>
-                        <div class="booking-service">${booking.appointmentSegments?.[0]?.serviceVariationId || 'Telehealth Visit'}</div>
-                    </div>
-                    <div class="status-badge">Confirmed</div>
-                </div>
-                
-                ${customer ? `
-                    <div class="patient-info">
-                        <strong>Patient:</strong> ${customer.givenName} ${customer.familyName}
-                    </div>
-                    <div class="patient-info">
-                        <strong>Email:</strong> ${customer.emailAddress || 'N/A'}
-                    </div>
-                    <div class="patient-info">
-                        <strong>Phone:</strong> ${customer.phoneNumber || 'N/A'}
-                    </div>
-                    
-                    ${customer.note ? `
-                        <div class="health-notes">
-                            <h4>Health Information & Consent</h4>
-                            <pre>${customer.note}</pre>
+
+        function displayBookings(bookings) {
+            const container = document.getElementById('bookingsList');
+            container.innerHTML = '';
+
+            bookings.forEach(booking => {
+                const card = document.createElement('div');
+                card.className = 'booking-card';
+
+                const customer = booking.customerDetails;
+                const startTime = new Date(booking.startAt);
+                const serviceName = Object.keys(SERVICE_IDS).find(key => 
+                    booking.appointmentSegments?.[0]?.serviceVariationId === SERVICE_IDS[key]
+                );
+
+                card.innerHTML = `
+                    <h4>${customer?.givenName} ${customer?.familyName}</h4>
+                    <span class="status-badge ${booking.status === 'ACCEPTED' ? 'status-accepted' : 'status-pending'}">
+                        ${booking.status || 'PENDING'}
+                    </span>
+                    <div class="booking-info">
+                        <div class="booking-info-item">
+                            <div class="booking-info-label">Service:</div>
+                            <div class="booking-info-value">${serviceName || 'Unknown'}</div>
                         </div>
+                        <div class="booking-info-item">
+                            <div class="booking-info-label">Date & Time:</div>
+                            <div class="booking-info-value">${startTime.toLocaleString()}</div>
+                        </div>
+                        <div class="booking-info-item">
+                            <div class="booking-info-label">Email:</div>
+                            <div class="booking-info-value">${customer?.emailAddress || 'N/A'}</div>
+                        </div>
+                        <div class="booking-info-item">
+                            <div class="booking-info-label">Phone:</div>
+                            <div class="booking-info-value">${customer?.phoneNumber || 'N/A'}</div>
+                        </div>
+                    </div>
+                    ${customer?.note ? `
+                        <details style="margin-top: 12px;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #495057;">View Patient Notes</summary>
+                            <pre style="white-space: pre-wrap; margin-top: 12px; font-size: 13px; color: #6c757d;">${customer.note}</pre>
+                        </details>
                     ` : ''}
-                ` : '<div class="patient-info">Patient information not available</div>'}
-            `;
-            
-            return card;
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Navigation
+        function goToStep(stepId) {
+            document.querySelectorAll('.step-content').forEach(step => {
+                step.classList.add('hidden');
+            });
+            document.getElementById(stepId).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateSteps(currentStep) {
+            for (let i = 1; i <= 6; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (i < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (i === currentStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            }
         }
     </script>
 </body>
