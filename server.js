@@ -1,4 +1,4 @@
- require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const { Client, Environment } = require('square');
 const cors = require('cors');
@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 // Square Client Setup
 const squareClient = new Client({
@@ -32,6 +32,11 @@ app.get('/health', (req, res) => {
         environment: process.env.NODE_ENV || 'development',
         services: SERVICE_IDS
     });
+});
+
+// Serve index.html at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Get availability
