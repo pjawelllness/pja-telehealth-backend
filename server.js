@@ -64,32 +64,32 @@ app.post('/api/provider-login', (req, res) => {
     }
 });
 
-// ==================== GET SERVICES ====================
+// ==================== GET SERVICES - FIXED! ====================
 app.get('/api/services', async (req, res) => {
     try {
-        const { result } = await squareClient.catalogApi.listCatalog(
-            undefined,
-            'ITEM'
-        );
+        // ✅ FIX: Search for APPOINTMENTS_SERVICE instead of ITEM
+        const { result } = await squareClient.catalogApi.searchCatalogItems({
+            productTypes: ['APPOINTMENTS_SERVICE']
+        });
 
-        const telehealth = result.objects
-            ?.filter(obj => 
-                obj.itemData?.name?.toLowerCase().includes('telehealth') ||
-                obj.itemData?.name?.toLowerCase().includes('wellness') ||
-                obj.itemData?.name?.toLowerCase().includes('consultation') ||
-                obj.itemData?.name?.toLowerCase().includes('acute care')
+        // ✅ FIX: Filter for only items with "Telehealth" in the name
+        const telehealth = result.items
+            ?.filter(item => 
+                item.itemData?.name?.toLowerCase().includes('telehealth')
             )
-            .map(obj => {
-                const variation = obj.itemData?.variations?.[0];
+            .map(item => {
+                const variation = item.itemData?.variations?.[0];
                 return {
-                    id: obj.id,
+                    id: item.id,
                     variationId: variation?.id,
-                    name: obj.itemData?.name,
-                    description: obj.itemData?.description || '',
+                    name: item.itemData?.name,
+                    description: item.itemData?.description || '',
                     price: variation?.itemVariationData?.priceMoney?.amount 
                         ? (Number(variation.itemVariationData.priceMoney.amount) / 100).toFixed(2)
                         : '0.00',
-                    duration: 30
+                    duration: variation?.itemVariationData?.serviceDuration 
+                        ? (variation.itemVariationData.serviceDuration / 60000)
+                        : 30
                 };
             }) || [];
 
@@ -216,7 +216,7 @@ app.post('/api/booking', async (req, res) => {
                 appointmentSegments: [{
                     durationMinutes: service.duration || 30,
                     serviceVariationId: service.variationId,
-                    teamMemberId: 'TMppwW92s3NuZ', // Patrick Smith's team member ID
+                    teamMemberId: 'TMpDyughFdZTf6ID', // Patrick Smith's team member ID
                     serviceVariationVersion: Date.now()
                 }]
             }
