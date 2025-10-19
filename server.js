@@ -56,7 +56,7 @@ app.get('/', (req, res) => {
 // ==================== PROVIDER PORTAL LOGIN ====================
 app.post('/api/provider-login', (req, res) => {
     const { password } = req.body;
-    
+
     if (password === PROVIDER_PASSWORD) {
         res.json({ success: true, message: 'Login successful' });
     } else {
@@ -64,36 +64,45 @@ app.post('/api/provider-login', (req, res) => {
     }
 });
 
-// ==================== GET SERVICES - FIXED! ====================
+// ==================== GET SERVICES ====================
 app.get('/api/services', async (req, res) => {
     try {
-        // ✅ FIX: Search for APPOINTMENTS_SERVICE instead of ITEM
+        // Search for APPOINTMENTS_SERVICE instead of ITEM
         const { result } = await squareClient.catalogApi.searchCatalogItems({
             productTypes: ['APPOINTMENTS_SERVICE']
         });
 
-        // ✅ FIX: Filter for only items with "Telehealth" in the name
+        console.log('📋 Raw catalog search result:', JSON.stringify(result, null, 2));
+
         const telehealth = result.items
             ?.filter(item => 
-                item.itemData?.name?.toLowerCase().includes('telehealth')
+                item.itemData?.name?.toLowerCase().includes('telehealth') ||
+                item.itemData?.name?.toLowerCase().includes('wellness') ||
+                item.itemData?.name?.toLowerCase().includes('consultation') ||
+                item.itemData?.name?.toLowerCase().includes('acute care')
             )
             .map(item => {
                 const variation = item.itemData?.variations?.[0];
+                const priceAmount = variation?.itemVariationData?.priceMoney?.amount;
+                
+                // Convert BigInt to Number BEFORE doing any math
+                const priceInCents = typeof priceAmount === 'bigint' 
+                    ? Number(priceAmount) 
+                    : priceAmount || 0;
+                
                 return {
                     id: item.id,
-                    variationId: variation?.id,
-                    name: item.itemData?.name,
+                    variationId: variation?.id || '',
+                    name: item.itemData?.name || '',
                     description: item.itemData?.description || '',
-                    price: variation?.itemVariationData?.priceMoney?.amount 
-                        ? (Number(variation.itemVariationData.priceMoney.amount) / 100).toFixed(2)
-                        : '0.00',
-                    duration: variation?.itemVariationData?.serviceDuration 
-                        ? (variation.itemVariationData.serviceDuration / 60000)
-                        : 30
+                    price: (priceInCents / 100).toFixed(2),
+                    duration: 30
                 };
             }) || [];
 
-        res.json(fixBigInt({ services: telehealth }));
+        console.log(`✅ Found ${telehealth.length} telehealth services`);
+
+        res.json({ services: telehealth });
     } catch (error) {
         console.error('❌ Error fetching services:', error);
         res.status(500).json({ 
@@ -107,7 +116,7 @@ app.get('/api/services', async (req, res) => {
 app.post('/api/availability', async (req, res) => {
     try {
         const { date, serviceId } = req.body;
-        
+
         if (!date) {
             return res.status(400).json({ error: 'Date is required' });
         }
@@ -116,7 +125,7 @@ app.post('/api/availability', async (req, res) => {
         const searchDate = new Date(date);
         const startAt = new Date(searchDate);
         startAt.setHours(0, 0, 0, 0);
-        
+
         const endAt = new Date(searchDate);
         endAt.setHours(23, 59, 59, 999);
 
@@ -138,7 +147,7 @@ app.post('/api/availability', async (req, res) => {
         });
 
         const availabilities = result.availabilities || [];
-        
+
         console.log(`✅ Found ${availabilities.length} available slots`);
 
         // Filter for selected date and format
@@ -216,7 +225,7 @@ app.post('/api/booking', async (req, res) => {
                 appointmentSegments: [{
                     durationMinutes: service.duration || 30,
                     serviceVariationId: service.variationId,
-                    teamMemberId: 'TMpDyughFdZTf6ID', // Patrick Smith's team member ID
+                    teamMemberId: 'TMppwW92s3NuZ', // Patrick Smith's team member ID
                     serviceVariationVersion: Date.now()
                 }]
             }
@@ -257,7 +266,7 @@ app.get('/api/bookings', async (req, res) => {
     try {
         const startAt = new Date();
         startAt.setHours(0, 0, 0, 0);
-        
+
         const endAt = new Date();
         endAt.setDate(endAt.getDate() + 30);
         endAt.setHours(23, 59, 59, 999);
@@ -272,7 +281,7 @@ app.get('/api/bookings', async (req, res) => {
         );
 
         const bookings = result.bookings || [];
-        
+
         const formatted = await Promise.all(bookings.map(async booking => {
             let customerInfo = {};
             try {
