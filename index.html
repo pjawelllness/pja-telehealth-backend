@@ -3,316 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PJA Wellness Telehealth</title>
-    
-    <!-- Square Web Payments SDK -->
-    <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
-    
+    <title>PJA Wellness - Telehealth Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fb;
             min-height: 100vh;
             padding: 20px;
+            color: #1a1a1a;
         }
         
-        .container { max-width: 900px; margin: 0 auto; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
         
         .header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            margin-bottom: 30px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 48px 40px;
             text-align: center;
+            position: relative;
         }
         
-        .header h1 { color: #2d3748; font-size: 28px; margin-bottom: 10px; }
-        .header p { color: #666; font-size: 16px; }
+        .header h1 { 
+            font-size: 32px; 
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
         
-        .hipaa-badge {
-            background: #10b981;
-            color: white;
+        .header p { 
+            opacity: 0.95; 
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .trust-badge {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
             padding: 8px 16px;
             border-radius: 20px;
-            display: inline-block;
-            margin-top: 15px;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            margin-bottom: 20px;
+        .content { padding: 48px 40px; }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .step.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .step-indicator {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            padding: 0 20px;
-        }
-        
-        .step { text-align: center; flex: 1; position: relative; }
-        
-        .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            color: #666;
-            display: inline-flex;
-            align-items: center;
             justify-content: center;
-            font-weight: bold;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 40px;
         }
         
-        .step.active .step-number { background: #667eea; color: white; }
-        .step.completed .step-number { background: #10b981; color: white; }
-        
-        .step-section { display: none; }
-        .step-section.active { display: block; }
-        
-        .service-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .service-card {
-            border: 2px solid #e0e0e0;
-            padding: 25px;
-            border-radius: 12px;
-            cursor: pointer;
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e5e7eb;
             transition: all 0.3s;
         }
         
-        .service-card:hover { border-color: #667eea; transform: translateY(-5px); }
-        .service-card.selected { border-color: #667eea; background: #f8f9ff; }
+        .step-dot.active { 
+            background: #2563eb;
+            width: 24px;
+            border-radius: 4px;
+        }
         
-        .service-icon { font-size: 48px; margin-bottom: 15px; }
-        .service-name { font-size: 18px; font-weight: bold; color: #2d3748; margin-bottom: 10px; }
-        .service-price { font-size: 24px; color: #667eea; font-weight: bold; margin-bottom: 10px; }
+        h2 {
+            color: #111827;
+            margin-bottom: 32px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
         
-        .form-group { margin-bottom: 20px; }
+        .service-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .service-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 28px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            position: relative;
+        }
+        
+        .service-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+        }
+        
+        .service-card.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .service-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            letter-spacing: -0.3px;
+        }
+        
+        .service-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        .service-details {
+            color: #6b7280;
+            font-size: 15px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .hsa-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #10b981;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
         
         label {
             display: block;
-            margin-bottom: 8px;
             font-weight: 600;
-            color: #2d3748;
+            margin-bottom: 10px;
+            color: #374151;
+            font-size: 15px;
         }
         
         input, textarea, select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            color: #111827;
         }
         
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        textarea { min-height: 100px; resize: vertical; }
+        
+        .time-slot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .time-slot {
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .time-slot:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        
+        .time-slot.selected {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
         }
         
         .consent-box {
-            background: #f8f9ff;
-            border: 2px solid #667eea;
-            padding: 25px;
-            border-radius: 8px;
-            margin: 25px 0;
-            max-height: 450px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            max-height: 320px;
             overflow-y: auto;
-            font-size: 14px;
-            line-height: 1.8;
         }
         
         .consent-box h3 {
-            color: #667eea;
-            margin-bottom: 15px;
+            color: #2563eb;
+            margin-bottom: 16px;
             font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .consent-box h4 {
-            color: #2d3748;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-size: 15px;
             font-weight: 600;
         }
         
-        .consent-box p { margin-bottom: 12px; color: #333; }
-        .consent-box ul { margin-left: 20px; margin-bottom: 12px; }
-        .consent-box li { margin-bottom: 8px; color: #333; }
+        .consent-box p {
+            margin-bottom: 14px;
+            line-height: 1.7;
+            color: #4b5563;
+            font-size: 14px;
+        }
         
         .checkbox-group {
             display: flex;
-            align-items: start;
-            gap: 10px;
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 8px;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
         }
         
         .checkbox-group input[type="checkbox"] {
             width: 20px;
             height: 20px;
             margin-top: 2px;
-            flex-shrink: 0;
+            cursor: pointer;
         }
         
-        .btn {
-            background: #667eea;
-            color: white;
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px 32px;
             border: none;
-            padding: 15px 40px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
         
-        .btn:hover { background: #5568d3; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.6; }
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #1e40af;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         
         .btn-secondary {
-            background: #6c757d;
-            margin-top: 10px;
+            background: #f3f4f6;
+            color: #374151;
         }
         
-        .btn-secondary:hover { background: #5a6268; }
-        
-        .time-slot-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+        .btn-secondary:hover { 
+            background: #e5e7eb; 
         }
-        
-        .time-slot {
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .time-slot:hover { border-color: #667eea; background: #f8f9ff; }
-        .time-slot.selected { border-color: #667eea; background: #e6e9ff; }
         
         .success-message {
             text-align: center;
-            padding: 40px 20px;
+            padding: 48px 24px;
         }
         
-        .success-message h2 {
-            color: #10b981;
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-        
-        .error-message {
-            background: #fee;
-            border: 2px solid #f00;
-            color: #c00;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
         }
         
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 32px;
+            color: #2563eb;
         }
         
-        #payment-form {
-            margin: 20px 0;
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #fecaca;
         }
         
-        .payment-status-container {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 8px;
+        /* Provider Portal Styles */
+        .provider-access {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+        }
+        
+        .provider-btn {
+            background: white;
+            color: #2563eb;
+            padding: 14px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            border: 2px solid #2563eb;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        
+        .provider-btn:hover {
+            background: #2563eb;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+        }
+        
+        .provider-portal {
+            display: none;
+        }
+        
+        .provider-portal.active {
+            display: block;
+        }
+        
+        .bookings-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 24px;
+        }
+        
+        .booking-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            background: #f9fafb;
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .booking-time {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2563eb;
+        }
+        
+        .booking-service {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .status-badge {
+            background: #10b981;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .patient-info {
+            margin-bottom: 12px;
+            color: #4b5563;
+            font-size: 15px;
+        }
+        
+        .patient-info strong {
+            color: #111827;
+            margin-right: 6px;
+        }
+        
+        .health-notes {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .health-notes h4 {
+            color: #2563eb;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Patient Booking Portal -->
+    <div id="patientPortal" class="container">
         <div class="header">
-            <h1>🏥 PJA Wellness Management - Telehealth</h1>
-            <p>HIPAA-Compliant Virtual Consultations with Patrick Smith, BCHHP</p>
-            <div class="hipaa-badge">🔒 HIPAA Secure</div>
+            <h1>PJA Wellness Management</h1>
+            <p>Board Certified Holistic Health Practitioner | HIPAA-Compliant Telehealth</p>
+            <div class="trust-badges">
+                <div class="trust-badge">🔒 HIPAA Secure</div>
+                <div class="trust-badge">✓ Board Certified</div>
+                <div class="trust-badge">💳 HSA/FSA Accepted</div>
+            </div>
         </div>
-
-        <div class="card">
+        
+        <div class="content">
             <div class="step-indicator">
-                <div class="step active">
-                    <div class="step-number">1</div>
-                    <span>Service</span>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <span>Your Info</span>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <span>Health</span>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <span>Consent</span>
-                </div>
-                <div class="step">
-                    <div class="step-number">5</div>
-                    <span>Schedule & Pay</span>
-                </div>
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
             </div>
-
-            <!-- STEP 1: SELECT SERVICE -->
-            <div id="step1" class="step-section active">
-                <h2>Select Your Consultation Type</h2>
-                <p style="color: #666; margin-bottom: 20px;">💳 HSA/FSA cards accepted</p>
+            
+            <!-- Step 1: Service Selection -->
+            <div id="step1" class="step active">
+                <h2>Select Your Service</h2>
                 <div class="service-grid">
-                    <div class="service-card" onclick="selectService('comprehensive')">
-                        <div class="service-icon">🌟</div>
-                        <div class="service-name">Comprehensive Wellness</div>
-                        <div class="service-price">$99</div>
-                        <p style="color: #666; font-size: 14px;">60 minutes</p>
-                        <p style="margin-top: 10px;">Complete holistic health assessment and personalized wellness plan</p>
+                    <div class="service-card" onclick="selectService('Comprehensive Wellness Visit')">
+                        <div class="service-header">
+                            <div class="service-name">Comprehensive Wellness Visit</div>
+                            <div class="service-price">$99</div>
+                        </div>
+                        <div class="service-details">⏱ 45 minutes with Board Certified Practitioner</div>
+                        <div class="service-details">Complete health assessment and personalized wellness plan</div>
+                        <div class="hsa-badge">✓ HSA/FSA Accepted</div>
                     </div>
-                    <div class="service-card" onclick="selectService('followup')">
-                        <div class="service-icon">🔄</div>
-                        <div class="service-name">Follow-up Consultation</div>
-                        <div class="service-price">$75</div>
-                        <p style="color: #666; font-size: 14px;">30 minutes</p>
-                        <p style="margin-top: 10px;">Progress check-in and treatment plan adjustments</p>
+                    <div class="service-card" onclick="selectService('Follow-up Consultation')">
+                        <div class="service-header">
+                            <div class="service-name">Follow-up Consultation</div>
+                            <div class="service-price">$75</div>
+                        </div>
+                        <div class="service-details">⏱ 30 minutes with Board Certified Practitioner</div>
+                        <div class="service-details">Progress check-in and treatment plan adjustments</div>
+                        <div class="hsa-badge">✓ HSA/FSA Accepted</div>
                     </div>
-                    <div class="service-card" onclick="selectService('acute')">
-                        <div class="service-icon">🩹</div>
-                        <div class="service-name">Acute Care Visit</div>
-                        <div class="service-price">$50</div>
-                        <p style="color: #666; font-size: 14px;">20 minutes</p>
-                        <p style="margin-top: 10px;">Immediate concerns and acute symptoms</p>
+                    <div class="service-card" onclick="selectService('Acute Care Visit')">
+                        <div class="service-header">
+                            <div class="service-name">Acute Care Visit</div>
+                            <div class="service-price">$50</div>
+                        </div>
+                        <div class="service-details">⏱ 20 minutes with Board Certified Practitioner</div>
+                        <div class="service-details">Immediate concerns and acute symptoms</div>
+                        <div class="hsa-badge">✓ HSA/FSA Accepted</div>
                     </div>
                 </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="nextStep()" disabled id="step1NextBtn">Continue to Personal Info</button>
+                </div>
             </div>
-
-            <!-- STEP 2: PERSONAL INFO -->
-            <div id="step2" class="step-section">
+            
+            <!-- Step 2: Personal Info -->
+            <div id="step2" class="step">
                 <h2>Your Information</h2>
                 <div class="form-group">
                     <label>First Name *</label>
@@ -323,716 +532,459 @@
                     <input type="text" id="lastName" required>
                 </div>
                 <div class="form-group">
+                    <label>Date of Birth *</label>
+                    <input type="date" id="dob" required>
+                </div>
+                <div class="form-group">
                     <label>Email Address *</label>
                     <input type="email" id="email" required>
                 </div>
                 <div class="form-group">
                     <label>Phone Number *</label>
-                    <input type="tel" id="phone" placeholder="(248) 555-1234" required>
+                    <input type="tel" id="phone" required placeholder="(123) 456-7890">
                 </div>
-                <div class="form-group">
-                    <label>Date of Birth</label>
-                    <input type="date" id="dob">
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="nextStep()">Continue to Health Info</button>
                 </div>
-                <div class="form-group">
-                    <label>Emergency Contact Name</label>
-                    <input type="text" id="emergencyName">
-                </div>
-                <div class="form-group">
-                    <label>Emergency Contact Phone</label>
-                    <input type="tel" id="emergencyPhone">
-                </div>
-                <button class="btn" onclick="nextStep()">Continue</button>
-                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
             </div>
-
-            <!-- STEP 3: HEALTH INFO -->
-            <div id="step3" class="step-section">
+            
+            <!-- Step 3: Health Information -->
+            <div id="step3" class="step">
                 <h2>Health Information</h2>
                 <div class="form-group">
-                    <label>What brings you in today? (Chief Complaint) *</label>
-                    <textarea id="chiefComplaint" rows="4" required placeholder="Please describe your main health concern or reason for consultation"></textarea>
+                    <label>Primary Concern *</label>
+                    <input type="text" id="primaryConcern" required placeholder="e.g., digestive issues, fatigue, stress management">
                 </div>
                 <div class="form-group">
-                    <label>How long have you experienced these symptoms?</label>
-                    <select id="symptomDuration">
-                        <option value="">Select duration</option>
-                        <option value="less-than-week">Less than a week</option>
-                        <option value="1-2-weeks">1-2 weeks</option>
-                        <option value="2-4-weeks">2-4 weeks</option>
-                        <option value="1-3-months">1-3 months</option>
-                        <option value="more-than-3-months">More than 3 months</option>
+                    <label>Current Symptoms *</label>
+                    <textarea id="symptoms" required placeholder="Please describe your symptoms in detail"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>How Long Have You Experienced These Symptoms? *</label>
+                    <select id="duration" required>
+                        <option value="">Select duration...</option>
+                        <option value="Less than 1 week">Less than 1 week</option>
+                        <option value="1-2 weeks">1-2 weeks</option>
+                        <option value="2-4 weeks">2-4 weeks</option>
+                        <option value="1-3 months">1-3 months</option>
+                        <option value="More than 3 months">More than 3 months</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Current Symptoms (check all that apply)</label>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Fatigue"> Fatigue</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Pain"> Pain</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Digestive Issues"> Digestive Issues</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Sleep Problems"> Sleep Problems</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Stress/Anxiety"> Stress/Anxiety</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Headaches"> Headaches</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Inflammation"> Inflammation</label>
-                        <label style="font-weight: normal;"><input type="checkbox" class="symptom-check" value="Other"> Other</label>
-                    </div>
+                    <label>Symptom Severity (1-10) *</label>
+                    <input type="number" id="severity" min="1" max="10" required placeholder="1 = Mild, 10 = Severe">
                 </div>
                 <div class="form-group">
                     <label>Current Medications</label>
-                    <textarea id="medications" rows="3" placeholder="List all medications, supplements, and vitamins you are currently taking"></textarea>
+                    <textarea id="medications" placeholder="List all current medications, supplements, and vitamins"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Known Allergies</label>
-                    <textarea id="allergies" rows="2" placeholder="List any drug or food allergies"></textarea>
+                    <textarea id="allergies" placeholder="Food allergies, medication allergies, environmental allergies"></textarea>
                 </div>
-                <button class="btn" onclick="nextStep()">Continue</button>
-                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
+                <div class="form-group">
+                    <label>Relevant Medical History</label>
+                    <textarea id="medicalHistory" placeholder="Previous diagnoses, surgeries, chronic conditions"></textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="nextStep()">Continue to Consent</button>
+                </div>
             </div>
-
-            <!-- STEP 4: CONSENT FORMS -->
-            <div id="step4" class="step-section">
-                <h2>Review and Sign Consent Forms</h2>
-                <p style="color: #666; margin-bottom: 20px;">Please read and agree to both consent forms below. Scroll through each form to review all sections.</p>
+            
+            <!-- Step 4: Consent Forms -->
+            <div id="step4" class="step">
+                <h2>Consent Forms</h2>
                 
-                <!-- SIMPLIFIED HIPAA CONSENT -->
                 <div class="consent-box">
-                    <h3>📋 HIPAA PRIVACY CONSENT</h3>
-                    <p><strong>PJA Wellness Management LLC</strong><br>
-                    2139 Austin Ave, Rochester Hills, MI 48309<br>
-                    Phone: (248) 794-7135</p>
-
-                    <h4>CONSENT FOR USE AND DISCLOSURE OF PROTECTED HEALTH INFORMATION</h4>
-
-                    <p>I understand that as part of my healthcare, PJA Wellness Management LLC creates and maintains health records describing my health history, symptoms, examination and test results, diagnoses, treatment, and any plans for future care or treatment. I understand that this information, called "Protected Health Information" or "PHI," belongs to me.</p>
-
-                    <h4>HOW MY HEALTH INFORMATION MAY BE USED AND DISCLOSED:</h4>
-
-                    <p><strong>For Treatment:</strong> My health information may be used and disclosed to provide, coordinate, or manage my healthcare and related services. This includes consultation with other healthcare providers who may be involved in my care, providing referrals, and prescribing medications or treatments.</p>
-
-                    <p><strong>For Payment:</strong> My health information may be used and disclosed to obtain payment for services provided, including billing, claims submission to insurance companies, determination of eligibility and coverage, and reviewing services for medical necessity.</p>
-
-                    <p><strong>For Healthcare Operations:</strong> My health information may be used for quality assessment and improvement activities, training, compliance reviews, business planning, and customer service including appointment reminders.</p>
-
-                    <p><strong>As Required by Law:</strong> My health information may be disclosed when required by federal, state, or local law, including public health reporting, law enforcement, judicial proceedings, and to prevent serious threats to health or safety.</p>
-
-                    <h4>MY RIGHTS:</h4>
-
-                    <p>I understand that I have the right to:</p>
-                    <ul>
-                        <li>Request access to and copies of my health information</li>
-                        <li>Request amendments to my health information if I believe it is incorrect or incomplete</li>
-                        <li>Request restrictions on how my information is used or disclosed</li>
-                        <li>Request confidential communications by alternative means or locations</li>
-                        <li>Receive a paper copy of this consent</li>
-                        <li>Be notified in the event of a breach of my unsecured health information</li>
-                        <li>Revoke this consent at any time by providing written notice</li>
-                    </ul>
-
-                    <p><strong>DATA SECURITY:</strong> All telehealth sessions are conducted through HIPAA-compliant platforms with encryption and secure data storage. My health information will be protected according to state and federal privacy laws.</p>
-
-                    <p><strong>CONSENT ACKNOWLEDGMENT:</strong> By signing below, I acknowledge that I have been provided with this notice, understand my rights, and consent to the use and disclosure of my protected health information as described above for treatment, payment, and healthcare operations.</p>
+                    <h3>HIPAA Privacy Notice</h3>
+                    <p><strong>Your Health Information Rights:</strong> You have the right to request restrictions on uses and disclosures of your protected health information, inspect and obtain copies of your health records, and request amendments to your health information.</p>
+                    
+                    <p><strong>Our Responsibilities:</strong> We are required by law to maintain the privacy of your protected health information and provide you with notice of our legal duties and privacy practices. We will not use or disclose your health information without your written authorization, except as described in this notice.</p>
+                    
+                    <p><strong>How We Use Your Information:</strong> We may use and disclose your health information for treatment, payment, and healthcare operations. We may also share information with other healthcare providers involved in your care, process insurance claims, and conduct quality improvement activities.</p>
+                    
+                    <p><strong>Your Privacy:</strong> We maintain physical, electronic, and procedural safeguards to protect your health information. Access to your information is limited to authorized personnel only.</p>
                 </div>
-
+                
                 <div class="checkbox-group">
-                    <input type="checkbox" id="hipaaConsent" required>
-                    <label for="hipaaConsent" style="font-weight: normal;">I acknowledge that I have read, understand, and agree to the HIPAA Notice of Privacy Practices. I understand how my health information may be used and disclosed, and I acknowledge receipt of this notice.</label>
+                    <input type="checkbox" id="hipaaConsent">
+                    <label for="hipaaConsent">I have read and agree to the HIPAA Privacy Notice</label>
                 </div>
-
-                <!-- COMPLETE TELEHEALTH CONSENT -->
+                
                 <div class="consent-box">
-                    <h3>📱 INFORMED CONSENT FOR TELEHEALTH SERVICES</h3>
-                    <p><strong>PJA Wellness Management LLC</strong><br>
-                    Holistic Health Practitioner: Patrick Smith, Board Certified Holistic Health Practitioner (BCHHP)</p>
-
-                    <h4>1. DEFINITION OF TELEHEALTH</h4>
-                    <p>Telehealth involves the use of electronic communications and information technology to enable healthcare providers at different locations to share patient medical information for the purpose of improving patient care. Our telehealth platform uses HIPAA-compliant secure video conferencing to protect your privacy and confidentiality.</p>
-
-                    <h4>2. NATURE OF TELEHEALTH CONSULTATIONS</h4>
-                    <p>During your telehealth consultation with PJA Wellness Management:</p>
-                    <ul>
-                        <li>You will connect via secure, HIPAA-compliant video conferencing (Doxy.me platform)</li>
-                        <li>Your holistic health practitioner will be able to see and hear you in real-time</li>
-                        <li>You will discuss your health concerns, symptoms, wellness goals, and lifestyle</li>
-                        <li>The practitioner will review your health history, current medications, and symptoms</li>
-                        <li>You will receive personalized recommendations for holistic treatments, nutritional guidance, lifestyle modifications, and wellness strategies</li>
-                        <li>Follow-up care and additional consultations may be recommended based on your needs</li>
-                    </ul>
-
-                    <h4>3. BENEFITS OF TELEHEALTH</h4>
-                    <ul>
-                        <li>Improved access to holistic healthcare from the comfort and privacy of your home</li>
-                        <li>Reduced travel time, transportation costs, and time away from work</li>
-                        <li>More flexible scheduling options to fit your lifestyle</li>
-                        <li>Continuity of care even when in-person visits are not possible</li>
-                        <li>Reduced exposure to contagious illnesses in waiting rooms</li>
-                        <li>Access to specialized holistic health expertise regardless of geographic location</li>
-                        <li>Ability to involve family members or caregivers in your care from their own locations</li>
-                    </ul>
-
-                    <h4>4. POSSIBLE RISKS AND LIMITATIONS</h4>
-                    <p>I understand that telehealth consultations have potential risks and limitations, including:</p>
-                    <ul>
-                        <li>Technical difficulties or interruptions in the video/audio connection may occur</li>
-                        <li>Inability to conduct certain physical examinations or hands-on assessments</li>
-                        <li>Potential delays in evaluation or treatment due to technical issues</li>
-                        <li>Rare possibility of security protocol failures causing a breach of privacy</li>
-                        <li>Limited ability to respond to immediate medical emergencies</li>
-                        <li>Possible need for an in-person follow-up consultation or referral</li>
-                        <li>Technology may not adequately substitute for in-person care in certain situations</li>
-                    </ul>
-
-                    <h4>5. TECHNOLOGY REQUIREMENTS AND SECURITY</h4>
-                    <p>I understand and agree that:</p>
-                    <ul>
-                        <li>I am responsible for providing a secure, private location for my consultation</li>
-                        <li>I need a reliable internet connection and compatible device (computer, tablet, or smartphone)</li>
-                        <li>The telehealth platform (Doxy.me) is HIPAA-compliant and secured with encryption</li>
-                        <li>I should ensure others cannot overhear my consultation unless I give explicit permission</li>
-                        <li>Technical difficulties may require rescheduling the consultation at no additional charge</li>
-                        <li>I will test my technology before the scheduled appointment time</li>
-                    </ul>
-
-                    <h4>6. EMERGENCY SITUATIONS</h4>
-                    <p><strong>IMPORTANT:</strong> Telehealth is NOT appropriate for emergency situations. If I am experiencing a medical emergency, I understand I must:</p>
-                    <ul>
-                        <li>Call 911 immediately for life-threatening emergencies</li>
-                        <li>Go to the nearest emergency room</li>
-                        <li>Contact my primary care physician or local urgent care</li>
-                    </ul>
-                    <p>Examples of medical emergencies include: chest pain, difficulty breathing, severe bleeding, loss of consciousness, severe allergic reactions, stroke symptoms, or thoughts of harming myself or others.</p>
-
-                    <h4>7. PRACTITIONER QUALIFICATIONS AND SCOPE OF PRACTICE</h4>
-                    <p>I understand that Patrick Smith is a Board Certified Holistic Health Practitioner (BCHHP) and that:</p>
-                    <ul>
-                        <li>Holistic health services are complementary and alternative approaches to health and wellness</li>
-                        <li>These services complement, but do not replace, conventional medical care</li>
-                        <li>I should maintain care with my primary care physician for medical diagnosis and treatment</li>
-                        <li>I should inform both my holistic practitioner and my physician about all treatments I am receiving</li>
-                        <li>The practitioner may recommend I consult with my physician before implementing certain health changes</li>
-                        <li>Holistic health practitioners do not diagnose or treat medical diseases</li>
-                    </ul>
-
-                    <h4>8. CONFIDENTIALITY AND PRIVACY</h4>
-                    <p>I understand that:</p>
-                    <ul>
-                        <li>The same confidentiality and privacy protections that apply to in-person consultations also apply to telehealth services</li>
-                        <li>All electronic communications and records are protected under HIPAA regulations</li>
-                        <li>Telehealth sessions will NOT be recorded unless I provide explicit written consent</li>
-                        <li>My health information will not be shared with third parties without my consent except as required by law</li>
-                        <li>I am responsible for maintaining the privacy of my consultation location</li>
-                        <li>All data is encrypted and stored securely in HIPAA-compliant systems</li>
-                    </ul>
-
-                    <h4>9. PAYMENT, INSURANCE, AND BILLING</h4>
-                    <p>I understand and agree that:</p>
-                    <ul>
-                        <li>Payment is due at the time of service via credit card or HSA/FSA card</li>
-                        <li>I am responsible for full payment whether or not my insurance covers telehealth services</li>
-                        <li>Telehealth holistic health services may be eligible for HSA/FSA reimbursement</li>
-                        <li>I should verify coverage with my insurance company if I plan to submit for reimbursement</li>
-                        <li>Service fees are: Comprehensive Wellness Visit ($99/60 min), Follow-up Consultation ($75/30 min), Acute Care Visit ($50/20 min)</li>
-                        <li>Fees are subject to change with advance notice</li>
-                    </ul>
-
-                    <h4>10. CANCELLATION AND NO-SHOW POLICY</h4>
-                    <p>I understand and agree that:</p>
-                    <ul>
-                        <li>I must provide at least 24 hours notice to cancel or reschedule my appointment</li>
-                        <li>Late cancellations (less than 24 hours) may result in a $25 fee</li>
-                        <li>No-shows (missed appointments without notice) may result in the full appointment fee</li>
-                        <li>Repeated no-shows may require prepayment for future appointments</li>
-                        <li>Emergencies and extenuating circumstances will be considered on a case-by-case basis</li>
-                    </ul>
-
-                    <h4>11. STATE-SPECIFIC TELEHEALTH REGULATIONS</h4>
-                    <p>I understand that:</p>
-                    <ul>
-                        <li>Telehealth services are provided in accordance with Michigan state laws and regulations</li>
-                        <li>The practitioner is licensed to practice in Michigan</li>
-                        <li>I must be physically located in Michigan during the telehealth consultation</li>
-                        <li>Services provided across state lines may have additional restrictions</li>
-                    </ul>
-
-                    <h4>12. RIGHT TO WITHDRAW CONSENT</h4>
-                    <p>I understand that I have the right to:</p>
-                    <ul>
-                        <li>Withdraw my consent for telehealth services at any time without affecting my right to future care</li>
-                        <li>Request an in-person consultation instead of or in addition to telehealth</li>
-                        <li>Refuse any recommended treatment, test, or intervention</li>
-                        <li>Ask questions about my care at any time during the consultation</li>
-                        <li>Request clarification if I do not understand something</li>
-                        <li>Receive a copy of this consent form for my records</li>
-                    </ul>
-
-                    <h4>13. PATIENT RESPONSIBILITIES</h4>
-                    <p>I agree to:</p>
-                    <ul>
-                        <li>Provide accurate and complete health information</li>
-                        <li>Update my practitioner about any changes in my health status or medications</li>
-                        <li>Follow treatment recommendations to the best of my ability</li>
-                        <li>Inform my practitioner if I do not understand instructions</li>
-                        <li>Ask questions when I need clarification</li>
-                        <li>Maintain regular follow-up as recommended</li>
-                        <li>Report any adverse effects or concerns promptly</li>
-                    </ul>
-
-                    <h4>14. CONSENT AND ACKNOWLEDGMENT</h4>
-                    <p>By signing below, I acknowledge and agree that:</p>
-                    <ul>
-                        <li>I have read and fully understand this Informed Consent for Telehealth Services</li>
-                        <li>I have had the opportunity to ask questions and all my questions have been answered to my satisfaction</li>
-                        <li>I understand the benefits, risks, and limitations of telehealth services</li>
-                        <li>I understand the technology requirements, security measures, and my responsibilities</li>
-                        <li>I understand when telehealth is NOT appropriate (medical emergencies)</li>
-                        <li>I understand the practitioner's qualifications, scope of practice, and limitations</li>
-                        <li>I voluntarily consent to receive telehealth services from PJA Wellness Management LLC</li>
-                        <li>I understand I can withdraw this consent at any time</li>
-                        <li>I have received or been offered a copy of this consent form</li>
-                    </ul>
-
-                    <h4>15. CONTACT INFORMATION</h4>
-                    <p>For questions about telehealth services, technical support, or to report concerns:<br>
-                    <strong>Patrick Smith, BCHHP</strong><br>
-                    PJA Wellness Management LLC<br>
-                    2139 Austin Ave, Rochester Hills, MI 48309<br>
-                    Phone: (248) 794-7135<br>
-                    Email: patrick@pjawellness.com<br>
-                    Website: www.pjawellness.com</p>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="telehealthConsent" required>
-                    <label for="telehealthConsent" style="font-weight: normal;">I have read, understood, and agree to the Informed Consent for Telehealth Services. I voluntarily consent to participate in telehealth consultations with PJA Wellness Management LLC and understand all benefits, risks, and limitations.</label>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="recordingConsent">
-                    <label for="recordingConsent" style="font-weight: normal;">(Optional) I consent to having my telehealth session recorded for quality assurance, training, and educational purposes. I understand that recordings will be kept confidential, secured, and used only for stated purposes.</label>
-                </div>
-
-                <div class="form-group" style="margin-top: 30px;">
-                    <label>Electronic Signature (Type your full legal name) *</label>
-                    <input type="text" id="signature" required placeholder="Type your full legal name">
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">By typing your name above, you are providing your legally binding electronic signature and agreeing to all terms and conditions stated in both consent forms.</p>
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Date: <span id="signatureDate"></span></p>
-                </div>
-
-                <button class="btn" onclick="nextStep()">Continue to Scheduling & Payment</button>
-                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
-            </div>
-
-            <!-- STEP 5: SCHEDULE & PAY -->
-            <div id="step5" class="step-section">
-                <h2>Schedule Your Appointment</h2>
-                <p style="margin-bottom: 20px;">Select your preferred appointment time:</p>
-                
-                <div id="timeSlotsContainer" class="loading">
-                    <p>Loading available appointment times...</p>
-                </div>
-
-                <div id="paymentSection" style="display: none;">
-                    <h3 style="margin-top: 40px; margin-bottom: 20px;">Payment Information</h3>
-                    <p style="margin-bottom: 20px;">Total: <strong id="totalAmount">$0</strong></p>
-                    <div id="payment-form"></div>
-                    <div id="payment-status-container"></div>
-                    <button class="btn" id="confirmBookingBtn" onclick="processPaymentAndBooking()" disabled>Complete Booking & Pay</button>
+                    <h3>Telehealth Informed Consent</h3>
+                    <p><strong>Nature of Telehealth:</strong> Telehealth involves the use of electronic communications to enable healthcare providers at different locations to share patient medical information for diagnosis, therapy, follow-up, and education.</p>
+                    
+                    <p><strong>Benefits:</strong> Improved access to medical care by enabling you to remain at home while consulting with your healthcare provider. More efficient medical evaluation and management.</p>
+                    
+                    <p><strong>Risks:</strong> As with any medical procedure, there are potential risks including technical difficulties, information transmission delays, or security protocol failures. In rare cases, lack of access to complete medical records may result in adverse drug interactions or allergic reactions.</p>
+                    
+                    <p><strong>Security:</strong> We use industry-standard encryption and security protocols to protect your privacy. However, no system can guarantee complete security.</p>
+                    
+                    <p><strong>Emergency Situations:</strong> In case of emergency, call 911 immediately. Telehealth is not appropriate for emergency situations.</p>
+                    
+                    <p><strong>Payment:</strong> You are responsible for payment at the time of service. Services may be eligible for HSA/FSA reimbursement.</p>
+                    
+                    <p><strong>Right to Withdraw:</strong> You may withdraw consent and discontinue telehealth services at any time without affecting your right to future care.</p>
                 </div>
                 
-                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
-            </div>
-
-            <!-- SUCCESS MESSAGE -->
-            <div id="successMessage" class="step-section">
-                <div class="success-message">
-                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
-                    <h2>Appointment Confirmed!</h2>
-                    <p style="font-size: 18px; color: #666; margin: 20px 0;">
-                        Your telehealth consultation has been successfully booked and paid.
-                    </p>
-                    <div style="background: #f8f9ff; padding: 25px; border-radius: 12px; margin: 30px 0; text-align: left;">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">📋 Appointment Details:</h3>
-                        <p style="margin: 10px 0;"><strong>Service:</strong> <span id="confirmedService"></span></p>
-                        <p style="margin: 10px 0;"><strong>Date & Time:</strong> <span id="confirmedTime"></span></p>
-                        <p style="margin: 10px 0;"><strong>Provider:</strong> Patrick Smith, BCHHP</p>
-                        <p style="margin: 10px 0;"><strong>Amount Paid:</strong> <span id="confirmedAmount"></span></p>
-                        <p style="margin: 10px 0;"><strong>Booking ID:</strong> <span id="confirmedBookingId"></span></p>
-                    </div>
-                    <div style="background: #e6f7ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <p style="margin: 10px 0;"><strong>📧 Confirmation email sent!</strong></p>
-                        <p style="margin: 10px 0;">Check your email for:</p>
-                        <ul style="text-align: left; margin-left: 40px;">
-                            <li>Complete appointment details</li>
-                            <li>Video consultation link (Doxy.me)</li>
-                            <li>Preparation instructions</li>
-                            <li>Payment receipt</li>
-                        </ul>
-                    </div>
-                    <a href="#" id="doxyLinkBtn" class="btn" target="_blank" style="display: inline-block; text-decoration: none; margin-top: 20px;">
-                        🎥 Join Video Consultation (on appointment day)
-                    </a>
-                    <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                        Questions? Call <strong>(248) 794-7135</strong>
-                    </p>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="telehealthConsent">
+                    <label for="telehealthConsent">I have read and agree to the Telehealth Informed Consent</label>
+                </div>
+                
+                <div class="form-group">
+                    <label>Electronic Signature (Type your full name) *</label>
+                    <input type="text" id="signature" required placeholder="John Doe">
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="nextStep()">Continue to Scheduling</button>
                 </div>
             </div>
+            
+            <!-- Step 5: Select Appointment Time -->
+            <div id="step5" class="step">
+                <h2>Select Appointment Time</h2>
+                <div id="loadingSlots" class="loading">
+                    <p>Loading available times...</p>
+                </div>
+                <div id="timeSlots" class="time-slot-grid"></div>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn-primary" onclick="nextStep()" disabled id="step5NextBtn">Complete Booking</button>
+                </div>
+            </div>
+            
+            <!-- Step 6: Confirmation -->
+            <div id="step6" class="step">
+                <div id="bookingResult"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Provider Portal Access -->
+    <div class="provider-access">
+        <button class="provider-btn" onclick="toggleProviderPortal()">
+            👨‍⚕️ Provider Portal
+        </button>
+    </div>
+    
+    <!-- Provider Portal -->
+    <div id="providerPortal" class="provider-portal container">
+        <div class="header">
+            <h1>Provider Portal</h1>
+            <p>Upcoming Telehealth Appointments</p>
+        </div>
+        
+        <div class="content">
+            <button class="btn-secondary" onclick="toggleProviderPortal()" style="margin-bottom: 24px;">← Back to Patient Portal</button>
+            <div id="loadingBookings" class="loading">
+                <p>Loading appointments...</p>
+            </div>
+            <div id="bookingsList" class="bookings-grid"></div>
         </div>
     </div>
 
     <script>
-        const API_URL = window.location.origin; // Use same domain
-        const SQUARE_APP_ID = 'sq0idp-L3xw49hDN2eDUHDZ4INXVQ'; // Your production app ID
-        const SQUARE_LOCATION_ID = 'LCH18SFX6M76N';
-        
+        const API_BASE = window.location.origin;
         let currentStep = 1;
-        let selectedService = null;
-        let selectedTimeSlot = null;
-        let bookingData = {};
-        let card = null;
-        let payments = null;
-
-        // Initialize Square Payments
-        async function initSquarePayments() {
-            try {
-                payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
-                card = await payments.card();
-                await card.attach('#payment-form');
-                console.log('Square Payments initialized');
-            } catch (error) {
-                console.error('Failed to initialize Square Payments:', error);
-                document.getElementById('payment-status-container').innerHTML = 
-                    '<div class="error-message">Payment system unavailable. Please call (248) 794-7135 to complete booking.</div>';
-            }
-        }
-
-        // Set signature date
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+        let bookingData = {
+            selectedService: null,
+            serviceId: null,
+            customerInfo: {},
+            healthInfo: {},
+            consent: {},
+            selectedTime: null
+        };
+        
+        const SERVICE_IDS = {
+            'Comprehensive Wellness Visit': 'EOS5TK4VKO6YGM4TYUFMXO2W',
+            'Follow-up Consultation': 'KOGODBCXVOKARIL3YZ5DVSKS',
+            'Acute Care Visit': '45HRDI4XGITSL4SYOKJKYNK4'
+        };
+        
+        function selectService(serviceName) {
+            document.querySelectorAll('.service-card').forEach(card => {
+                card.classList.remove('selected');
             });
-            document.getElementById('signatureDate').textContent = today;
-        });
-
-        // SERVICE SELECTION
-        function selectService(serviceType) {
-            const services = {
-                'comprehensive': {
-                    type: 'comprehensive',
-                    name: 'Comprehensive Wellness Visit',
-                    price: '$99',
-                    priceAmount: 99,
-                    duration: 60
-                },
-                'followup': {
-                    type: 'followup',
-                    name: 'Follow-up Consultation',
-                    price: '$75',
-                    priceAmount: 75,
-                    duration: 30
-                },
-                'acute': {
-                    type: 'acute',
-                    name: 'Acute Care Visit',
-                    price: '$50',
-                    priceAmount: 50,
-                    duration: 20
-                }
-            };
-
-            selectedService = services[serviceType];
-            document.querySelectorAll('.service-card').forEach(card => card.classList.remove('selected'));
-            event.target.closest('.service-card').classList.add('selected');
+            event.currentTarget.classList.add('selected');
             
-            setTimeout(() => nextStep(), 500);
+            bookingData.selectedService = serviceName;
+            bookingData.serviceId = SERVICE_IDS[serviceName];
+            document.getElementById('step1NextBtn').disabled = false;
         }
-
-        // STEP NAVIGATION
+        
         function nextStep() {
-            if (!validateStep(currentStep)) {
-                return;
-            }
-
-            document.getElementById(`step${currentStep}`).classList.remove('active');
-            currentStep++;
-            document.getElementById(`step${currentStep}`).classList.add('active');
+            if (!validateStep(currentStep)) return;
             
-            updateStepIndicator();
-            
-            if (currentStep === 5) {
+            if (currentStep === 4) {
                 loadAvailability();
             }
             
-            window.scrollTo(0, 0);
+            if (currentStep === 5) {
+                submitBooking();
+                return;
+            }
+            
+            currentStep++;
+            updateStepDisplay();
         }
-
-        function previousStep() {
-            document.getElementById(`step${currentStep}`).classList.remove('active');
+        
+        function prevStep() {
             currentStep--;
-            document.getElementById(`step${currentStep}`).classList.add('active');
-            updateStepIndicator();
-            window.scrollTo(0, 0);
+            updateStepDisplay();
         }
-
-        function updateStepIndicator() {
-            document.querySelectorAll('.step').forEach((step, index) => {
-                step.classList.remove('active', 'completed');
-                if (index + 1 === currentStep) {
-                    step.classList.add('active');
-                } else if (index + 1 < currentStep) {
-                    step.classList.add('completed');
-                }
+        
+        function updateStepDisplay() {
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index < currentStep);
             });
         }
-
-        // VALIDATION
+        
         function validateStep(step) {
-            switch(step) {
-                case 1:
-                    if (!selectedService) {
-                        alert('Please select a consultation type');
-                        return false;
-                    }
-                    return true;
-                
-                case 2:
-                    const firstName = document.getElementById('firstName').value.trim();
-                    const lastName = document.getElementById('lastName').value.trim();
-                    const email = document.getElementById('email').value.trim();
-                    const phone = document.getElementById('phone').value.trim();
-                    
-                    if (!firstName || !lastName || !email || !phone) {
-                        alert('Please fill in all required fields (marked with *)');
-                        return false;
-                    }
-                    
-                    bookingData.personal = {
-                        firstName,
-                        lastName,
-                        email,
-                        phone,
-                        dob: document.getElementById('dob').value,
-                        emergencyName: document.getElementById('emergencyName').value,
-                        emergencyPhone: document.getElementById('emergencyPhone').value
-                    };
-                    return true;
-                
-                case 3:
-                    const chiefComplaint = document.getElementById('chiefComplaint').value.trim();
-                    if (!chiefComplaint) {
-                        alert('Please describe your reason for visit');
-                        return false;
-                    }
-                    
-                    const symptoms = [];
-                    document.querySelectorAll('.symptom-check:checked').forEach(cb => {
-                        symptoms.push(cb.value);
-                    });
-                    
-                    bookingData.health = {
-                        chiefComplaint,
-                        symptomDuration: document.getElementById('symptomDuration').value,
-                        symptoms,
-                        medications: document.getElementById('medications').value,
-                        allergies: document.getElementById('allergies').value
-                    };
-                    return true;
-                
-                case 4:
-                    const hipaaConsent = document.getElementById('hipaaConsent').checked;
-                    const telehealthConsent = document.getElementById('telehealthConsent').checked;
-                    const signature = document.getElementById('signature').value.trim();
-                    
-                    if (!hipaaConsent || !telehealthConsent) {
-                        alert('Please review and agree to both consent forms');
-                        return false;
-                    }
-                    
-                    if (!signature) {
-                        alert('Please provide your electronic signature');
-                        return false;
-                    }
-                    
-                    bookingData.consents = {
-                        hipaa: hipaaConsent,
-                        telehealth: telehealthConsent,
-                        recording: document.getElementById('recordingConsent').checked,
-                        signature,
-                        timestamp: new Date().toISOString()
-                    };
-                    return true;
-                
-                default:
-                    return true;
+            if (step === 1) {
+                return bookingData.selectedService !== null;
             }
+            
+            if (step === 2) {
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const dob = document.getElementById('dob').value;
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                
+                if (!firstName || !lastName || !dob || !email || !phone) {
+                    alert('Please fill in all required fields');
+                    return false;
+                }
+                
+                bookingData.customerInfo = { firstName, lastName, dob, email, phone };
+                return true;
+            }
+            
+            if (step === 3) {
+                const primaryConcern = document.getElementById('primaryConcern').value.trim();
+                const symptoms = document.getElementById('symptoms').value.trim();
+                const duration = document.getElementById('duration').value;
+                const severity = document.getElementById('severity').value;
+                
+                if (!primaryConcern || !symptoms || !duration || !severity) {
+                    alert('Please fill in all required fields');
+                    return false;
+                }
+                
+                bookingData.healthInfo = {
+                    primaryConcern,
+                    symptoms,
+                    duration,
+                    severity,
+                    medications: document.getElementById('medications').value.trim(),
+                    allergies: document.getElementById('allergies').value.trim(),
+                    medicalHistory: document.getElementById('medicalHistory').value.trim()
+                };
+                return true;
+            }
+            
+            if (step === 4) {
+                const hipaa = document.getElementById('hipaaConsent').checked;
+                const telehealth = document.getElementById('telehealthConsent').checked;
+                const signature = document.getElementById('signature').value.trim();
+                
+                if (!hipaa || !telehealth || !signature) {
+                    alert('Please agree to all consent forms and provide your signature');
+                    return false;
+                }
+                
+                bookingData.consent = { hipaa, telehealth, signature };
+                return true;
+            }
+            
+            if (step === 5) {
+                return bookingData.selectedTime !== null;
+            }
+            
+            return true;
         }
-
-        // LOAD AVAILABILITY
+        
         async function loadAvailability() {
-            const container = document.getElementById('timeSlotsContainer');
-            container.innerHTML = '<p class="loading">Checking availability in your Square calendar...</p>';
+            const loadingEl = document.getElementById('loadingSlots');
+            const slotsEl = document.getElementById('timeSlots');
+            
+            loadingEl.style.display = 'block';
+            slotsEl.innerHTML = '';
             
             try {
-                const startDate = new Date().toISOString();
-                const endDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-                
-                console.log('Requesting availability for:', selectedService.type);
-                
-                const response = await fetch(`${API_URL}/api/availability`, {
+                const response = await fetch(`${API_BASE}/api/availability`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        serviceType: selectedService.type,
-                        startDate,
-                        endDate
-                    })
+                    body: JSON.stringify({ serviceId: bookingData.serviceId })
                 });
                 
                 const data = await response.json();
-                console.log('Availability response:', data);
+                loadingEl.style.display = 'none';
                 
-                if (data.success && data.availabilities && data.availabilities.length > 0) {
-                    displayTimeSlots(data.availabilities);
+                if (data.availabilities && data.availabilities.length > 0) {
+                    data.availabilities.forEach(slot => {
+                        const slotEl = document.createElement('div');
+                        slotEl.className = 'time-slot';
+                        
+                        const date = new Date(slot.startAt);
+                        slotEl.innerHTML = `
+                            <div><strong>${date.toLocaleDateString()}</strong></div>
+                            <div>${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        `;
+                        
+                        slotEl.onclick = () => selectTimeSlot(slot.startAt, slotEl);
+                        slotsEl.appendChild(slotEl);
+                    });
                 } else {
-                    container.innerHTML = `
-                        <div class="error-message">
-                            <p><strong>No available time slots found.</strong></p>
-                            <p>${data.message || 'Please call (248) 794-7135 to schedule your appointment.'}</p>
+                    slotsEl.innerHTML = '<div class="error">No available slots found. Please contact the office.</div>';
+                }
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                slotsEl.innerHTML = `<div class="error">Failed to load availability: ${error.message}</div>`;
+            }
+        }
+        
+        function selectTimeSlot(time, element) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            bookingData.selectedTime = time;
+            document.getElementById('step5NextBtn').disabled = false;
+        }
+        
+        async function submitBooking() {
+            const resultEl = document.getElementById('bookingResult');
+            resultEl.innerHTML = '<div class="loading"><p>Creating your appointment...</p></div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/booking`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultEl.innerHTML = `
+                        <div class="success-message">
+                            <div class="success-icon">✅</div>
+                            <h2>Appointment Confirmed!</h2>
+                            <p>Your telehealth appointment has been successfully booked.</p>
+                            <p style="color: #6b7280; margin-top: 16px;"><strong>Booking ID:</strong> ${result.bookingId}</p>
+                            <p style="color: #6b7280;">You will receive a confirmation email with your appointment details and video link.</p>
+                            <button class="btn-primary" onclick="location.reload()" style="margin-top: 32px;">Book Another Appointment</button>
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `
+                        <div class="error">
+                            <h3>Booking Failed</h3>
+                            <p>${result.error || 'An error occurred'}</p>
+                            <button class="btn-primary" onclick="prevStep()" style="margin-top: 16px;">Go Back</button>
                         </div>
                     `;
                 }
             } catch (error) {
-                console.error('Error loading availability:', error);
-                container.innerHTML = `
-                    <div class="error-message">
-                        <p><strong>Unable to load availability.</strong></p>
-                        <p>Please call (248) 794-7135 to schedule your appointment.</p>
+                resultEl.innerHTML = `
+                    <div class="error">
+                        <h3>Booking Failed</h3>
+                        <p>Please call our office: (586) 557-2224</p>
+                        <button class="btn-primary" onclick="prevStep()" style="margin-top: 16px;">Go Back</button>
                     </div>
                 `;
             }
         }
-
-        function displayTimeSlots(availabilities) {
-            const container = document.getElementById('timeSlotsContainer');
-            let html = '<div class="time-slot-grid">';
+        
+        // Provider Portal Functions
+        async function toggleProviderPortal() {
+            const patientPortal = document.getElementById('patientPortal');
+            const providerPortal = document.getElementById('providerPortal');
             
-            availabilities.slice(0, 15).forEach(slot => {
-                const date = new Date(slot.startAt);
-                const dateStr = date.toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-                const timeStr = date.toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit' 
-                });
-                
-                html += `
-                    <div class="time-slot" onclick="selectTimeSlot('${slot.startAt}')">
-                        <div style="font-weight: bold; color: #2d3748;">${dateStr}</div>
-                        <div style="font-size: 1.1rem; margin: 5px 0; color: #667eea;">${timeStr}</div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function selectTimeSlot(startAt) {
-            document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-            event.target.closest('.time-slot').classList.add('selected');
-            selectedTimeSlot = { startAt };
-            
-            // Show payment section
-            document.getElementById('paymentSection').style.display = 'block';
-            document.getElementById('totalAmount').textContent = selectedService.price;
-            document.getElementById('confirmBookingBtn').disabled = false;
-            
-            // Initialize Square Payments if not already done
-            if (!payments) {
-                initSquarePayments();
+            if (providerPortal.classList.contains('active')) {
+                providerPortal.classList.remove('active');
+                patientPortal.style.display = 'block';
+            } else {
+                providerPortal.classList.add('active');
+                patientPortal.style.display = 'none';
+                loadBookings();
             }
-            
-            // Scroll to payment section
-            document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth' });
         }
-
-        // PROCESS PAYMENT AND BOOKING
-        async function processPaymentAndBooking() {
-            if (!selectedTimeSlot) {
-                alert('Please select an appointment time');
-                return;
-            }
+        
+        async function loadBookings() {
+            const loadingEl = document.getElementById('loadingBookings');
+            const bookingsEl = document.getElementById('bookingsList');
             
-            const confirmBtn = document.getElementById('confirmBookingBtn');
-            const statusContainer = document.getElementById('payment-status-container');
-            
-            confirmBtn.disabled = true;
-            confirmBtn.textContent = 'Processing payment...';
-            statusContainer.innerHTML = '<p style="color: #667eea; text-align: center;">💳 Processing payment...</p>';
+            loadingEl.style.display = 'block';
+            bookingsEl.innerHTML = '';
             
             try {
-                // Tokenize payment method
-                console.log('Tokenizing payment...');
-                const result = await card.tokenize();
+                const response = await fetch(`${API_BASE}/api/bookings`);
+                const data = await response.json();
                 
-                if (result.status === 'OK') {
-                    console.log('Payment token received:', result.token);
-                    
-                    confirmBtn.textContent = 'Creating appointment...';
-                    statusContainer.innerHTML = '<p style="color: #667eea; text-align: center;">📅 Creating your appointment...</p>';
-                    
-                    // Create booking with payment token
-                    const response = await fetch(`${API_URL}/api/booking`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            personal: bookingData.personal,
-                            health: bookingData.health,
-                            consents: bookingData.consents,
-                            service: selectedService,
-                            selectedSlot: selectedTimeSlot,
-                            paymentToken: result.token
-                        })
+                loadingEl.style.display = 'none';
+                
+                if (data.bookings && data.bookings.length > 0) {
+                    data.bookings.forEach(booking => {
+                        const bookingCard = createBookingCard(booking);
+                        bookingsEl.appendChild(bookingCard);
                     });
-                    
-                    const bookingResult = await response.json();
-                    console.log('Booking result:', bookingResult);
-                    
-                    if (bookingResult.success) {
-                        // Show success
-                        document.getElementById('step5').classList.remove('active');
-                        document.getElementById('successMessage').classList.add('active');
-                        
-                        // Fill in confirmation details
-                        document.getElementById('confirmedService').textContent = selectedService.name;
-                        document.getElementById('confirmedTime').textContent = new Date(selectedTimeSlot.startAt).toLocaleString();
-                        document.getElementById('confirmedAmount').textContent = selectedService.price;
-                        document.getElementById('confirmedBookingId').textContent = bookingResult.bookingId;
-                        document.getElementById('doxyLinkBtn').href = bookingResult.doxyLink;
-                        
-                        updateStepIndicator();
-                    } else {
-                        throw new Error(bookingResult.error || bookingResult.message || 'Booking failed');
-                    }
                 } else {
-                    console.error('Payment tokenization failed:', result);
-                    throw new Error(result.errors ? result.errors[0].message : 'Payment failed');
+                    bookingsEl.innerHTML = '<p style="text-align: center; color: #6b7280;">No upcoming appointments</p>';
                 }
-                
             } catch (error) {
-                console.error('Booking error:', error);
-                statusContainer.innerHTML = `
-                    <div class="error-message">
-                        <p><strong>Booking failed:</strong> ${error.message}</p>
-                        <p>Please call (248) 794-7135 to complete your booking.</p>
-                    </div>
-                `;
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Complete Booking & Pay';
+                loadingEl.style.display = 'none';
+                bookingsEl.innerHTML = `<div class="error">Failed to load bookings: ${error.message}</div>`;
             }
+        }
+        
+        function createBookingCard(booking) {
+            const card = document.createElement('div');
+            card.className = 'booking-card';
+            
+            const startTime = new Date(booking.startAt);
+            const customer = booking.customerDetails;
+            
+            card.innerHTML = `
+                <div class="booking-header">
+                    <div>
+                        <div class="booking-time">${startTime.toLocaleString()}</div>
+                        <div class="booking-service">${booking.appointmentSegments?.[0]?.serviceVariationId || 'Telehealth Visit'}</div>
+                    </div>
+                    <div class="status-badge">Confirmed</div>
+                </div>
+                
+                ${customer ? `
+                    <div class="patient-info">
+                        <strong>Patient:</strong> ${customer.givenName} ${customer.familyName}
+                    </div>
+                    <div class="patient-info">
+                        <strong>Email:</strong> ${customer.emailAddress || 'N/A'}
+                    </div>
+                    <div class="patient-info">
+                        <strong>Phone:</strong> ${customer.phoneNumber || 'N/A'}
+                    </div>
+                    
+                    ${customer.note ? `
+                        <div class="health-notes">
+                            <h4>Health Information & Consent</h4>
+                            <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; font-size: 14px; color: #4b5563; line-height: 1.6;">${customer.note}</pre>
+                        </div>
+                    ` : ''}
+                ` : '<div class="patient-info">Patient information not available</div>'}
+            `;
+            
+            return card;
         }
     </script>
 </body>
