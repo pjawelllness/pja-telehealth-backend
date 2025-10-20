@@ -139,7 +139,10 @@ app.post('/api/availability', async (req, res) => {
                     },
                     locationId: LOCATION_ID,
                     segmentFilters: [{
-                        serviceVariationId: serviceId
+                        serviceVariationId: serviceId,
+                        teamMemberIdFilter: {
+                            any: ['TMpDyughFdZTf6ID']  // Patrick Smith's Team Member ID
+                        }
                     }]
                 }
             }
