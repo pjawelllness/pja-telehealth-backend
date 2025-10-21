@@ -354,12 +354,13 @@ app.get('/api/provider/bookings', async (req, res) => {
         endDate.setDate(endDate.getDate() + 30);
         
         const response = await squareClient.bookingsApi.listBookings(
-            undefined,
-            undefined,
-            TEAM_MEMBER_ID,
-            LOCATION_ID,
-            now.toISOString(),
-            endDate.toISOString()
+            undefined,              // limit
+            undefined,              // cursor
+            undefined,              // customerId (not filtering by customer)
+            TEAM_MEMBER_ID,         // teamMemberId (TMpDyughFdZTf6ID)
+            LOCATION_ID,            // locationId (LT1S9BE1EX0PW)
+            now.toISOString(),      // startAtMin
+            endDate.toISOString()   // startAtMax
         );
         
         const bookings = (response.result.bookings || [])
