@@ -117,22 +117,29 @@ app.get('/api/services', async (req, res) => {
     try {
         console.log('📋 Searching for telehealth services...');
         
-        const result = await squareClient.catalogApi.searchCatalogItems({
-            textFilter: {
-                synonyms: ["telehealth"]
-            },
-            productTypes: ["APPOINTMENTS_SERVICE"]
+        // Use searchCatalogObjects with text_query for keyword search
+        const result = await squareClient.catalogApi.searchObjects({
+            objectTypes: ["ITEM"],
+            query: {
+                textQuery: {
+                    keywords: ["telehealth"]
+                }
+            }
         });
 
-        console.log(`✅ Found ${result.result.items?.length || 0} items from Square`);
+        console.log(`✅ Found ${result.result.objects?.length || 0} objects from Square`);
 
-        const services = (result.result.items || [])
-            .filter(item => {
-                const name = item.itemData?.name || '';
-                return name.toLowerCase().includes('telehealth');
+        // Filter and map the services
+        const services = (result.result.objects || [])
+            .filter(obj => {
+                // Only include APPOINTMENTS_SERVICE items with "telehealth" in the name
+                const name = obj.itemData?.name || '';
+                const productType = obj.itemData?.productType;
+                return productType === 'APPOINTMENTS_SERVICE' && 
+                       name.toLowerCase().includes('telehealth');
             })
-            .map(item => {
-                const variation = item.itemData?.variations?.[0];
+            .map(obj => {
+                const variation = obj.itemData?.variations?.[0];
                 const priceAmount = variation?.itemVariationData?.priceMoney?.amount;
                 
                 // Convert BigInt to Number BEFORE doing any math
@@ -143,8 +150,8 @@ app.get('/api/services', async (req, res) => {
                 return {
                     id: String(variation?.id || ''),
                     variationId: String(variation?.id || ''),
-                    name: item.itemData?.name || '',
-                    description: item.itemData?.description || '',
+                    name: obj.itemData?.name || '',
+                    description: obj.itemData?.description || '',
                     price: (priceInCents / 100).toFixed(2),
                     duration: (variation?.itemVariationData?.serviceDuration || 3600000) / 60000
                 };
