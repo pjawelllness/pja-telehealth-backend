@@ -141,11 +141,17 @@ app.get('/api/services', async (req, res) => {
             .map(obj => {
                 const variation = obj.itemData?.variations?.[0];
                 const priceAmount = variation?.itemVariationData?.priceMoney?.amount;
+                const durationMs = variation?.itemVariationData?.serviceDuration;
                 
                 // Convert BigInt to Number BEFORE doing any math
                 const priceInCents = typeof priceAmount === 'bigint' 
                     ? Number(priceAmount) 
-                    : priceAmount || 0;
+                    : (priceAmount || 0);
+                
+                // Convert duration BigInt to Number BEFORE doing any math
+                const durationInMs = typeof durationMs === 'bigint'
+                    ? Number(durationMs)
+                    : (durationMs || 3600000);
 
                 return {
                     id: String(variation?.id || ''),
@@ -153,7 +159,7 @@ app.get('/api/services', async (req, res) => {
                     name: obj.itemData?.name || '',
                     description: obj.itemData?.description || '',
                     price: (priceInCents / 100).toFixed(2),
-                    duration: (variation?.itemVariationData?.serviceDuration || 3600000) / 60000
+                    duration: durationInMs / 60000
                 };
             });
 
