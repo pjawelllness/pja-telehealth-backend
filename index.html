@@ -1337,7 +1337,7 @@
 
         async function loadProviderBookings() {
             try {
-                const response = await fetch('/api/bookings');
+                const response = await fetch('/api/provider/bookings');
                 const data = await response.json();
                 const bookings = data.bookings || [];
 
