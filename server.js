@@ -120,7 +120,7 @@ async function sendPatientConfirmation(personal, service, selectedTime) {
     const msg = {
         to: personal.email,
         from: {
-            email: 'pjawellness@outlook.com',
+            email: 'pjawelllness@outlook.com',
             name: 'PJA Wellness'
         },
         subject: `Appointment Confirmed - ${service.name}`,
@@ -203,7 +203,7 @@ async function sendProviderNotification(personal, health, consents, service, sel
     const msg = {
         to: PROVIDER_EMAIL,
         from: {
-            email: 'pjawellness@outlook.com',
+            email: 'pjawelllness@outlook.com',
             name: 'PJA Wellness Booking System'
         },
         subject: `New Appointment: ${personal.firstName} ${personal.lastName} - ${selectedTime.time}`,
@@ -466,13 +466,12 @@ app.post('/api/booking', async (req, res) => {
             console.log('✅ Created new customer:', customerId);
         }
         
-        // UPDATED: Create booking with locationType set to PHONE for telehealth
+        // UPDATED: Create booking in Square
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
                 customerId: customerId,
                 startAt: selectedTime.startAt,
-                locationType: 'PHONE',  // ADDED: Marks as virtual/telehealth appointment
                 appointmentSegments: [{
                     durationMinutes: service.duration,
                     serviceVariationId: service.variationId,
