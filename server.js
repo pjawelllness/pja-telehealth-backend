@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { Client, Environment } = require('square');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
 const app = express();
 
@@ -18,16 +18,8 @@ const squareClient = new Client({
         : Environment.Sandbox
 });
 
-// Email Configuration (SendGrid)
-const emailTransporter = nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'apikey',
-        pass: process.env.SENDGRID_API_KEY
-    }
-});
+// SendGrid Setup
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Configuration
 const LOCATION_ID = 'LT1S9BE1EX0PW';
@@ -115,7 +107,7 @@ PATIENT VIDEO LINK: https://doxy.me/PatrickPJAwellness
 PROVIDER LINK: https://doxy.me/PatrickPJAwellness/provider`;
 }
 
-// NEW: Email sending functions
+// UPDATED: Email sending functions using SendGrid Web API
 async function sendPatientConfirmation(personal, service, selectedTime) {
     const appointmentDate = new Date(selectedTime.startAt);
     const formattedDate = appointmentDate.toLocaleDateString('en-US', { 
@@ -125,10 +117,13 @@ async function sendPatientConfirmation(personal, service, selectedTime) {
         day: 'numeric' 
     });
     
-    const mailOptions = {
-        from: '"PJA Wellness" <noreply@pjawellness.com>',
+    const msg = {
         to: personal.email,
-        subject: `Appointment Confirmation - ${service.name}`,
+        from: {
+            email: 'pjawellness@outlook.com',
+            name: 'PJA Wellness'
+        },
+        subject: `Appointment Confirmed - ${service.name}`,
         html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2c5f2d;">Appointment Confirmed ✓</h2>
@@ -179,7 +174,7 @@ async function sendPatientConfirmation(personal, service, selectedTime) {
             <hr style="margin: 30px 0;">
             
             <p style="font-size: 12px; color: #666;">
-                <strong>PJA Wellness</strong><br>
+                <strong>PJA Wellness - Telehealth Services</strong><br>
                 Sterling Heights, Michigan<br>
                 This is a HIPAA-compliant telehealth service.
             </p>
@@ -188,7 +183,7 @@ async function sendPatientConfirmation(personal, service, selectedTime) {
     };
     
     try {
-        await emailTransporter.sendMail(mailOptions);
+        await sgMail.send(msg);
         console.log('✅ Patient confirmation email sent to:', personal.email);
     } catch (error) {
         console.error('❌ Failed to send patient email:', error);
@@ -205,9 +200,12 @@ async function sendProviderNotification(personal, health, consents, service, sel
         day: 'numeric' 
     });
     
-    const mailOptions = {
-        from: '"PJA Wellness Booking System" <noreply@pjawellness.com>',
+    const msg = {
         to: PROVIDER_EMAIL,
+        from: {
+            email: 'pjawellness@outlook.com',
+            name: 'PJA Wellness Booking System'
+        },
         subject: `New Appointment: ${personal.firstName} ${personal.lastName} - ${selectedTime.time}`,
         html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -273,7 +271,7 @@ async function sendProviderNotification(personal, health, consents, service, sel
     };
     
     try {
-        await emailTransporter.sendMail(mailOptions);
+        await sgMail.send(msg);
         console.log('✅ Provider notification email sent to:', PROVIDER_EMAIL);
     } catch (error) {
         console.error('❌ Failed to send provider email:', error);
@@ -468,12 +466,13 @@ app.post('/api/booking', async (req, res) => {
             console.log('✅ Created new customer:', customerId);
         }
         
-        // Create booking in Square
+        // UPDATED: Create booking with locationType set to PHONE for telehealth
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
                 customerId: customerId,
                 startAt: selectedTime.startAt,
+                locationType: 'PHONE',  // ADDED: Marks as virtual/telehealth appointment
                 appointmentSegments: [{
                     durationMinutes: service.duration,
                     serviceVariationId: service.variationId,
@@ -487,7 +486,7 @@ app.post('/api/booking', async (req, res) => {
         
         console.log('✅ Booking created:', bookingResult.result.booking.id);
         
-        // NEW: Send emails after successful booking
+        // Send emails after successful booking
         await Promise.all([
             sendPatientConfirmation(personal, service, selectedTime),
             sendProviderNotification(personal, health, consents, service, selectedTime)
