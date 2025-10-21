@@ -1,84 +1,136 @@
-require('dotenv').config();
 const express = require('express');
-const { Client, Environment } = require('square');
 const cors = require('cors');
 const path = require('path');
+const { Client, Environment } = require('square');
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
 
-// Square Client
+// Square Client Setup
 const squareClient = new Client({
     accessToken: process.env.SQUARE_ACCESS_TOKEN,
-    environment: process.env.SQUARE_ENVIRONMENT === 'production' ? Environment.Production : Environment.Sandbox,
+    environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+        ? Environment.Production 
+        : Environment.Sandbox
 });
 
-const LOCATION_ID = process.env.SQUARE_LOCATION_ID || 'LT1S9BE1EX0PW';
-const PORT = process.env.PORT || 3000;
+// Configuration
+const LOCATION_ID = 'LT1S9BE1EX0PW';
+const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID'; // Patrick Smith
 const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
 
-console.log('🏥 PJA TELEHEALTH BACKEND STARTING...');
-console.log(`📍 Location ID: ${LOCATION_ID}`);
-console.log(`🌍 Environment: ${process.env.SQUARE_ENVIRONMENT || 'sandbox'}`);
-
-// ==================== HELPER: FIX BIGINT ====================
+// Helper function to handle BigInt serialization
 function fixBigInt(obj) {
-    if (obj === null || obj === undefined) return obj;
-    if (typeof obj === 'bigint') return obj.toString();
-    if (Array.isArray(obj)) return obj.map(fixBigInt);
-    if (typeof obj === 'object') {
-        const fixed = {};
-        for (const key in obj) {
-            fixed[key] = fixBigInt(obj[key]);
-        }
-        return fixed;
-    }
-    return obj;
+    return JSON.parse(JSON.stringify(obj, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+    ));
 }
 
-// ==================== HEALTH CHECK ====================
+// Helper function to build comprehensive customer note
+function buildCustomerNote(personal, health, consents) {
+    return `
+PATIENT INTAKE FORM
+===================
+
+PERSONAL INFORMATION:
+- Name: ${personal.firstName} ${personal.lastName}
+- Email: ${personal.email}
+- Phone: ${personal.phone}
+- Date of Birth: ${personal.dob}
+- Emergency Contact: ${personal.emergencyName || 'Not provided'} (${personal.emergencyPhone || 'Not provided'})
+
+CHIEF COMPLAINT:
+${health.chiefComplaint}
+
+SYMPTOM DURATION:
+${health.symptomDuration}
+
+CURRENT SYMPTOMS:
+${health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None reported'}
+
+MEDICATIONS:
+${health.medications || 'None reported'}
+
+ALLERGIES:
+${health.allergies || 'None reported'}
+
+CONSENTS:
+- HIPAA Privacy Notice: ${consents.hipaa ? 'Acknowledged' : 'Not acknowledged'}
+- Telehealth Informed Consent: ${consents.telehealth ? 'Agreed' : 'Not agreed'}
+- Session Recording: ${consents.recording ? 'Consented' : 'Declined'}
+
+VIDEO CONSULTATION LINK:
+https://doxy.me/PatrickPJAwellness
+
+FORM COMPLETED: ${new Date().toISOString()}
+`.trim();
+}
+
+// Helper function to build patient-facing note (for customer_note field)
+function buildPatientNote(health) {
+    return `Chief Complaint: ${health.chiefComplaint}
+
+Duration: ${health.symptomDuration}
+Symptoms: ${health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None reported'}`;
+}
+
+// Helper function to build provider note (for seller_note field)
+function buildProviderNote(personal, health, consents) {
+    return `PATIENT: ${personal.firstName} ${personal.lastName}
+DOB: ${personal.dob}
+EMAIL: ${personal.email}
+PHONE: ${personal.phone}
+
+CHIEF COMPLAINT: ${health.chiefComplaint}
+DURATION: ${health.symptomDuration}
+SYMPTOMS: ${health.symptoms.join(', ')}
+
+MEDICATIONS: ${health.medications || 'None'}
+ALLERGIES: ${health.allergies || 'None'}
+
+EMERGENCY CONTACT: ${personal.emergencyName || 'N/A'} (${personal.emergencyPhone || 'N/A'})
+
+CONSENTS:
+- HIPAA: ${consents.hipaa ? 'Yes' : 'No'}
+- Telehealth: ${consents.telehealth ? 'Yes' : 'No'}
+- Recording: ${consents.recording ? 'Yes' : 'No'}
+
+PATIENT VIDEO LINK: https://doxy.me/PatrickPJAwellness
+PROVIDER LINK: https://doxy.me/PatrickPJAwellness/provider`;
+}
+
+// HEALTH CHECK ENDPOINT
 app.get('/health', (req, res) => {
     res.json({ 
-        status: 'healthy', 
+        status: 'healthy',
         service: 'pja-telehealth',
         timestamp: new Date().toISOString(),
         location: LOCATION_ID
     });
 });
 
-// ==================== SERVE INDEX.HTML ====================
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// ==================== PROVIDER PORTAL LOGIN ====================
-app.post('/api/provider-login', (req, res) => {
-    const { password } = req.body;
-
-    if (password === PROVIDER_PASSWORD) {
-        res.json({ success: true, message: 'Login successful' });
-    } else {
-        res.status(401).json({ success: false, message: 'Invalid password' });
-    }
-});
-
-// ==================== GET SERVICES ====================
+// SERVICES ENDPOINT - Get telehealth services
 app.get('/api/services', async (req, res) => {
     try {
-        // Search for APPOINTMENTS_SERVICE instead of ITEM
-        const { result } = await squareClient.catalogApi.searchCatalogItems({
-            productTypes: ['APPOINTMENTS_SERVICE']
+        console.log('📋 Searching for telehealth services...');
+        
+        const result = await squareClient.catalogApi.searchCatalogItems({
+            textFilter: {
+                synonyms: ["telehealth"]
+            },
+            productTypes: ["APPOINTMENTS_SERVICE"]
         });
 
-        // Don't log raw result - contains BigInt values that can't be serialized
-        console.log('📋 Searching for telehealth services...');
+        console.log(`✅ Found ${result.result.items?.length || 0} items from Square`);
 
-        const telehealth = result.items
-            ?.filter(item => 
-                item.itemData?.name?.toLowerCase().includes('telehealth')
-            )
+        const services = (result.result.items || [])
+            .filter(item => {
+                const name = item.itemData?.name || '';
+                return name.toLowerCase().includes('telehealth');
+            })
             .map(item => {
                 const variation = item.itemData?.variations?.[0];
                 const priceAmount = variation?.itemVariationData?.priceMoney?.amount;
@@ -87,21 +139,20 @@ app.get('/api/services', async (req, res) => {
                 const priceInCents = typeof priceAmount === 'bigint' 
                     ? Number(priceAmount) 
                     : priceAmount || 0;
-                
-                return {
-                    id: String(item.id || ''),
-                    variationId: String(variation?.id || ''),
-                    name: String(item.itemData?.name || ''),
-                    description: String(item.itemData?.description || ''),
-                    price: (priceInCents / 100).toFixed(2),
-                    duration: 30
-                };
-            }) || [];
 
-        console.log(`✅ Found ${telehealth.length} telehealth services`);
+                return {
+                    id: String(variation?.id || ''),
+                    variationId: String(variation?.id || ''),
+                    name: item.itemData?.name || '',
+                    description: item.itemData?.description || '',
+                    price: (priceInCents / 100).toFixed(2),
+                    duration: (variation?.itemVariationData?.serviceDuration || 3600000) / 60000
+                };
+            });
+
+        console.log(`✅ Returning ${services.length} telehealth services`);
         
-        // Return clean data (no BigInt values)
-        res.json({ services: telehealth });
+        res.json({ services });
     } catch (error) {
         console.error('❌ Error fetching services:', error);
         res.status(500).json({ 
@@ -111,149 +162,149 @@ app.get('/api/services', async (req, res) => {
     }
 });
 
-// ==================== GET AVAILABILITY ====================
+// AVAILABILITY CHECK ENDPOINT
 app.post('/api/availability', async (req, res) => {
     try {
         const { date, serviceId } = req.body;
-
-        if (!date) {
-            return res.status(400).json({ error: 'Date is required' });
-        }
-
-        // Format date for Square API (YYYY-MM-DD)
-        const searchDate = new Date(date);
-        const startAt = new Date(searchDate);
-        startAt.setHours(0, 0, 0, 0);
-
-        const endAt = new Date(searchDate);
-        endAt.setHours(23, 59, 59, 999);
-
-        console.log(`🔍 Searching availability for ${searchDate.toISOString().split('T')[0]}`);
-
-        const { result } = await squareClient.bookingsApi.searchAvailability({
+        
+        console.log(`🗓️ Checking availability for ${date}, service: ${serviceId}`);
+        
+        // Search for available appointment slots - Square handles all logic
+        // This automatically excludes times when Patrick has existing bookings
+        const searchBody = {
             query: {
                 filter: {
-                    startAtRange: {
-                        startAt: startAt.toISOString(),
-                        endAt: endAt.toISOString()
-                    },
                     locationId: LOCATION_ID,
+                    startAtRange: {
+                        startAt: `${date}T00:00:00Z`,
+                        endAt: `${date}T23:59:59Z`
+                    },
                     segmentFilters: [{
                         serviceVariationId: serviceId,
                         teamMemberIdFilter: {
-                            any: ['TMpDyughFdZTf6ID']  // Patrick Smith's Team Member ID
+                            any: ['TMpDyughFdZTf6ID']  // Patrick Smith only
                         }
                     }]
                 }
             }
-        });
-
-        const availabilities = result.availabilities || [];
-
-        console.log(`✅ Found ${availabilities.length} available slots`);
-
-        // Filter for selected date and format
-        const slots = availabilities
-            .filter(slot => {
-                const slotDate = new Date(slot.startAt);
-                return slotDate.toISOString().split('T')[0] === searchDate.toISOString().split('T')[0];
+        };
+        
+        const response = await squareClient.bookingsApi.searchAvailability(searchBody);
+        
+        console.log(`✅ Square returned ${response.result.availabilities?.length || 0} available slots`);
+        console.log(`📋 Raw slots from Square:`, JSON.stringify(response.result.availabilities?.slice(0, 3), null, 2));
+        
+        // Just format what Square tells us is available
+        // Square already factors in:
+        // - Patrick's working hours set in Square dashboard
+        // - Existing bookings
+        // - Service duration
+        // - Time blocks
+        const availabilities = (response.result.availabilities || []).map(slot => ({
+            startAt: slot.startAt,
+            time: new Date(slot.startAt).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/New_York'
             })
-            .map(slot => {
-                const startTime = new Date(slot.startAt);
-                return {
-                    startAt: slot.startAt,
-                    time: startTime.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                    })
-                };
-            })
-            .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
-
-        res.json(fixBigInt({ availabilities: slots }));
+        }));
+        
+        console.log(`✅ Returning ${availabilities.length} slots to frontend`);
+        
+        res.json({ availabilities });
     } catch (error) {
-        console.error('❌ Error fetching availability:', error);
+        console.error('❌ Availability check error:', error);
         res.status(500).json({ 
-            error: 'Failed to fetch availability',
+            error: 'Failed to check availability',
             details: error.message 
         });
     }
 });
 
-// ==================== CREATE BOOKING ====================
+// BOOKING CREATION ENDPOINT
 app.post('/api/booking', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedTime } = req.body;
-
-        // 1. Create or Get Customer
-        let customerId;
+        
+        console.log('📝 Creating booking for:', personal.email);
+        
+        // Search for existing customer
+        let customerId = null;
         try {
             const searchResult = await squareClient.customersApi.searchCustomers({
                 query: {
                     filter: {
-                        emailAddress: { exact: personal.email }
+                        emailAddress: {
+                            exact: personal.email
+                        }
                     }
                 }
             });
-
+            
             if (searchResult.result.customers && searchResult.result.customers.length > 0) {
                 customerId = searchResult.result.customers[0].id;
-                console.log(`✅ Found existing customer: ${customerId}`);
-            } else {
-                const createResult = await squareClient.customersApi.createCustomer({
+                console.log('✅ Found existing customer:', customerId);
+                
+                // Update customer with latest information
+                await squareClient.customersApi.updateCustomer(customerId, {
                     givenName: personal.firstName,
                     familyName: personal.lastName,
                     emailAddress: personal.email,
                     phoneNumber: personal.phone,
-                    note: buildCustomerNote(personal, health, consents, service, new Date().toISOString())
+                    note: buildCustomerNote(personal, health, consents)
                 });
-                customerId = createResult.result.customer.id;
-                console.log(`✅ Created new customer: ${customerId}`);
+                console.log('✅ Updated customer information');
             }
-        } catch (error) {
-            console.error('❌ Customer error:', error);
-            throw new Error('Failed to create/find customer');
+        } catch (searchError) {
+            console.log('ℹ️ No existing customer found, will create new');
         }
-
-        // 2. Create Booking in Square
-        const bookingData = {
+        
+        // Create new customer if not found
+        if (!customerId) {
+            const customerResult = await squareClient.customersApi.createCustomer({
+                givenName: personal.firstName,
+                familyName: personal.lastName,
+                emailAddress: personal.email,
+                phoneNumber: personal.phone,
+                note: buildCustomerNote(personal, health, consents)
+            });
+            customerId = customerResult.result.customer.id;
+            console.log('✅ Created new customer:', customerId);
+        }
+        
+        // Create booking in Square
+        const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
                 customerId: customerId,
                 startAt: selectedTime.startAt,
-                customerNote: buildPatientNote(health, service),
-                sellerNote: buildProviderNote(personal, health, consents, service, new Date().toISOString()),
                 appointmentSegments: [{
-                    durationMinutes: service.duration || 30,
+                    durationMinutes: service.duration,
                     serviceVariationId: service.variationId,
-                    teamMemberId: 'TMppwW92s3NuZ', // Patrick Smith's team member ID
-                    serviceVariationVersion: Date.now()
-                }]
+                    teamMemberId: TEAM_MEMBER_ID,
+                    serviceVariationVersion: BigInt(Date.now())
+                }],
+                customerNote: buildPatientNote(health),
+                sellerNote: buildProviderNote(personal, health, consents)
             }
-        };
-
-        const bookingResult = await squareClient.bookingsApi.createBooking(bookingData);
-        const booking = bookingResult.result.booking;
-
-        console.log(`✅ Booking created: ${booking.id}`);
-
-        // 3. Send response with Doxy.me links
+        });
+        
+        console.log('✅ Booking created:', bookingResult.result.booking.id);
+        
         res.json({
             success: true,
-            bookingId: booking.id,
-            customerId: customerId,
+            bookingId: bookingResult.result.booking.id,
             confirmation: {
                 service: service.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
                 time: selectedTime.time,
                 duration: `${service.duration} minutes`,
-                provider: 'Patrick Smith, BCHHP',
-                doxyPatientLink: 'https://doxy.me/PatrickPJAwellness',
-                doxyProviderLink: 'https://doxy.me/PatrickPJAwellness/provider'
+                price: `$${service.price}`,
+                videoLink: 'https://doxy.me/PatrickPJAwellness'
             }
         });
-
+        
     } catch (error) {
         console.error('❌ Booking error:', error);
         res.status(500).json({ 
@@ -263,52 +314,55 @@ app.post('/api/booking', async (req, res) => {
     }
 });
 
-// ==================== GET BOOKINGS (PROVIDER PORTAL) ====================
-app.get('/api/bookings', async (req, res) => {
+// PROVIDER LOGIN ENDPOINT
+app.post('/api/provider-login', (req, res) => {
+    const { password } = req.body;
+    
+    if (password === PROVIDER_PASSWORD) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ 
+            success: false, 
+            error: 'Invalid password' 
+        });
+    }
+});
+
+// PROVIDER BOOKINGS ENDPOINT
+app.get('/api/provider/bookings', async (req, res) => {
     try {
-        const startAt = new Date();
-        startAt.setHours(0, 0, 0, 0);
-
-        const endAt = new Date();
-        endAt.setDate(endAt.getDate() + 30);
-        endAt.setHours(23, 59, 59, 999);
-
-        const { result } = await squareClient.bookingsApi.listBookings(
+        console.log('📋 Fetching provider bookings...');
+        
+        const now = new Date();
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+        
+        const response = await squareClient.bookingsApi.listBookings(
             undefined,
             undefined,
-            undefined,
+            TEAM_MEMBER_ID,
             LOCATION_ID,
-            startAt.toISOString(),
-            endAt.toISOString()
+            now.toISOString(),
+            endDate.toISOString()
         );
-
-        const bookings = result.bookings || [];
-
-        const formatted = await Promise.all(bookings.map(async booking => {
-            let customerInfo = {};
-            try {
-                const custResult = await squareClient.customersApi.retrieveCustomer(booking.customerId);
-                const customer = custResult.result.customer;
-                customerInfo = {
-                    name: `${customer.givenName || ''} ${customer.familyName || ''}`.trim(),
-                    email: customer.emailAddress,
-                    phone: customer.phoneNumber
-                };
-            } catch (e) {
-                console.error('Error fetching customer:', e);
-            }
-
-            return {
+        
+        const bookings = (response.result.bookings || [])
+            .map(booking => ({
                 id: booking.id,
                 startAt: booking.startAt,
-                customerNote: booking.customerNote || '',
-                sellerNote: booking.sellerNote || '',
-                status: booking.status,
-                customer: customerInfo
-            };
-        }));
-
-        res.json(fixBigInt({ bookings: formatted }));
+                customer: {
+                    name: `${booking.customerNote?.split('\n')[0]?.replace('Chief Complaint: ', '') || 'Unknown'}`,
+                    email: booking.sellerNote?.match(/EMAIL: (.+)/)?.[1] || '',
+                    phone: booking.sellerNote?.match(/PHONE: (.+)/)?.[1] || ''
+                },
+                customerNote: booking.customerNote,
+                sellerNote: booking.sellerNote
+            }))
+            .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+        
+        console.log(`✅ Found ${bookings.length} bookings`);
+        
+        res.json({ bookings });
     } catch (error) {
         console.error('❌ Error fetching bookings:', error);
         res.status(500).json({ 
@@ -318,107 +372,28 @@ app.get('/api/bookings', async (req, res) => {
     }
 });
 
-// ==================== BUILD CUSTOMER NOTE ====================
-function buildCustomerNote(personal, health, consents, service, timestamp) {
-    return `
-🩺 TELEHEALTH PATIENT RECORD
+// Serve index.html for root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-SERVICE: ${service.name}
-BOOKING DATE: ${timestamp}
-
-=== PATIENT INFORMATION ===
-Name: ${personal.firstName} ${personal.lastName}
-Email: ${personal.email}
-Phone: ${personal.phone}
-DOB: ${personal.dob || 'Not provided'}
-Emergency Contact: ${personal.emergencyName || 'None'} ${personal.emergencyPhone || ''}
-
-=== HEALTH INFORMATION ===
-Chief Complaint: ${health.chiefComplaint}
-Duration: ${health.symptomDuration || 'Not specified'}
-Symptoms: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None'}
-Current Medications: ${health.medications || 'None'}
-Allergies: ${health.allergies || 'None'}
-
-=== CONSENT STATUS ===
-HIPAA Privacy Notice: ${consents.hipaa ? 'SIGNED' : 'NOT SIGNED'} on ${timestamp}
-Telehealth Consent: ${consents.telehealth ? 'SIGNED' : 'NOT SIGNED'} on ${timestamp}
-Session Recording: ${consents.recording ? 'AUTHORIZED' : 'NOT AUTHORIZED'} on ${timestamp}
-
-=== COMPLIANCE ===
-All consents stored in Square (HIPAA compliant system)
-Platform: PJA Telehealth (HIPAA compliant)
-Video Platform: Doxy.me (HIPAA compliant - BAA on file)
-Provider: Patrick Smith, BCHHP
-    `.trim();
-}
-
-// ==================== BUILD PATIENT NOTE ====================
-function buildPatientNote(health, service) {
-    return `
-Chief Complaint: ${health.chiefComplaint}
-Duration: ${health.symptomDuration || 'Not specified'}
-Symptoms: ${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None checked'}
-
-Service: ${service.name}
-Duration: ${service.duration || 30} minutes
-    `.trim();
-}
-
-// ==================== BUILD PROVIDER NOTE ====================
-function buildProviderNote(personal, health, consents, service, timestamp) {
-    return `
-🩺 TELEHEALTH CONSULTATION - ${service.name}
-
-📋 PATIENT INFO:
-Name: ${personal.firstName} ${personal.lastName}
-Email: ${personal.email}
-Phone: ${personal.phone}
-DOB: ${personal.dob || 'Not provided'}
-Emergency: ${personal.emergencyName || 'None'} ${personal.emergencyPhone || ''}
-
-🏥 CHIEF COMPLAINT:
-${health.chiefComplaint}
-
-⏱ SYMPTOM DURATION: ${health.symptomDuration || 'Not specified'}
-
-🩹 CURRENT SYMPTOMS:
-${health.symptoms && health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None selected'}
-
-💊 MEDICATIONS:
-${health.medications || 'None reported'}
-
-⚠️ ALLERGIES:
-${health.allergies || 'None reported'}
-
-✅ CONSENT STATUS (Signed: ${timestamp}):
-- HIPAA Privacy: SIGNED ✓
-- Telehealth Consent: SIGNED ✓  
-- Recording: ${consents.recording ? 'AUTHORIZED ✓' : 'NOT AUTHORIZED'}
-
-🎥 VIDEO CONSULTATION:
-Provider Link: https://doxy.me/PatrickPJAwellness/provider
-Patient Link: https://doxy.me/PatrickPJAwellness
-
-📝 NOTE: All consent forms stored in Square Customer record (HIPAA compliant)
-    `.trim();
-}
-
-// ==================== CATCH-ALL ROUTE ====================
+// Catch-all route to serve frontend
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ==================== START SERVER ====================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('========================================');
-    console.log('🏥 PJA TELEHEALTH BACKEND');
-    console.log('========================================');
-    console.log(`📍 Port: ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.SQUARE_ENVIRONMENT || 'sandbox'}`);
-    console.log(`🏥 Location: ${LOCATION_ID}`);
-    console.log(`🔒 HIPAA Compliance: Active`);
-    console.log(`📝 Consent Storage: Square`);
-    console.log(`✅ Ready to accept bookings`);
-    console.log('========================================');
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`
+🚀 PJA Wellness Telehealth Backend Running!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📍 Port: ${PORT}
+🏥 Location: ${LOCATION_ID}
+👨‍⚕️ Provider: Patrick Smith (${TEAM_MEMBER_ID})
+🔒 Environment: ${process.env.SQUARE_ENVIRONMENT || 'production'}
+🎥 Patient Video Link: https://doxy.me/PatrickPJAwellness
+👨‍⚕️ Provider Portal: https://doxy.me/PatrickPJAwellness/provider
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    `);
 });
