@@ -205,7 +205,6 @@ app.post('/api/availability', async (req, res) => {
         const response = await squareClient.bookingsApi.searchAvailability(searchBody);
         
         console.log(`✅ Square returned ${response.result.availabilities?.length || 0} available slots`);
-        console.log(`📋 Raw slots from Square:`, JSON.stringify(response.result.availabilities?.slice(0, 3), null, 2));
         
         // Just format what Square tells us is available
         // Square already factors in:
@@ -213,15 +212,19 @@ app.post('/api/availability', async (req, res) => {
         // - Existing bookings
         // - Service duration
         // - Time blocks
-        const availabilities = (response.result.availabilities || []).map(slot => ({
-            startAt: slot.startAt,
-            time: new Date(slot.startAt).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-                timeZone: 'America/New_York'
-            })
-        }));
+        const availabilities = (response.result.availabilities || []).map(slot => {
+            // Convert to plain string values to avoid BigInt serialization issues
+            const startAtString = String(slot.startAt);
+            return {
+                startAt: startAtString,
+                time: new Date(startAtString).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'America/New_York'
+                })
+            };
+        });
         
         console.log(`✅ Returning ${availabilities.length} slots to frontend`);
         
