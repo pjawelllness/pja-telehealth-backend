@@ -118,7 +118,7 @@ app.get('/api/services', async (req, res) => {
         console.log('📋 Searching for telehealth services...');
         
         // Use searchCatalogObjects with text_query for keyword search
-        const result = await squareClient.catalogApi.searchObjects({
+        const result = await squareClient.catalogApi.searchCatalogObjects({
             objectTypes: ["ITEM"],
             query: {
                 textQuery: {
