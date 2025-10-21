@@ -1187,11 +1187,11 @@
                     localStorage.setItem('bookingConfirmation', JSON.stringify(result.confirmation));
                     
                     // Now redirect to Square payment
-                    // Square payment links for each service
+                    // UPDATED PAYMENT LINKS - Match current telehealth service IDs
                     const paymentLinks = {
-                        'LKCPW6YYN3V5OFPHXL3VWNMS': 'https://square.link/u/seXJR3vc',  // Comprehensive Wellness
-                        'HC3VNFGWV37HFUVJVXPKZ3VO': 'https://square.link/u/IYT3hsZj',  // Follow-up Consultation
-                        'Q4SB3C5I3XLEGYGRDZ475EPR': 'https://square.link/u/0Gfis1tW'   // Acute Care Visit
+                        '45HRDI4XGITSL4SYOKJKYNK4': 'https://square.link/u/0Gfis1tW',   // Acute Care Visit - $50
+                        'KOGODBCXVOKARIL3YZ5DVSKS': 'https://square.link/u/IYT3hsZj',  // Follow-up Consultation - $75
+                        'EOS5TK4VKO6YGM4TYUFMXO2W': 'https://square.link/u/seXJR3vc'   // Comprehensive Wellness - $99
                     };
 
                     const paymentLink = paymentLinks[selectedService.id];
