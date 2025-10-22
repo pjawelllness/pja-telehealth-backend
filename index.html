@@ -794,8 +794,8 @@
                 <h2>Complete Payment</h2>
                 
                 <div class="payment-warning">
-                    <h3>⚠️ Important: Payment Required Before Booking</h3>
-                    <p>To secure your appointment, you must complete payment first. After payment is confirmed, your appointment will be created and you'll receive confirmation via email/SMS with your Doxy.me video consultation link.</p>
+                    <h3>⚡ Important</h3>
+                    <p>Your appointment has been reserved! Click below to complete your payment via Square's secure checkout.</p>
                 </div>
 
                 <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
@@ -803,15 +803,16 @@
                     <div id="appointmentSummary"></div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="previousStep(5)">Back</button>
-                    <button class="btn btn-primary" id="proceedToPaymentBtn" onclick="proceedToPayment()">
-                        Proceed to Secure Payment →
-                    </button>
-                </div>
                 <div class="loading" id="paymentLoading">
                     <div class="spinner"></div>
-                    <p>Redirecting to secure payment...</p>
+                    <p>Processing your booking...</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="previousStep(5)">Back</button>
+                    <button class="btn btn-primary" id="proceedToPaymentBtn" onclick="createBookingAndRedirect()">
+                        Proceed to Secure Payment →
+                    </button>
                 </div>
             </div>
         </div>
@@ -861,12 +862,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadServices();
             setMinDate();
-            
-            // Check if returning from payment
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('payment') === 'complete') {
-                completeBookingAfterPayment();
-            }
         });
 
         function setMinDate() {
@@ -979,58 +974,45 @@
             selectedTime = { startAt, time };
         }
 
-        // PAYMENT FLOW
-        function proceedToPayment() {
-            if (!validateStep(6)) {
-                return;
-            }
-
+        // CREATE BOOKING AND REDIRECT TO PAYMENT (ORIGINAL FLOW RESTORED)
+        async function createBookingAndRedirect() {
             const paymentBtn = document.getElementById('proceedToPaymentBtn');
             const loadingDiv = document.getElementById('paymentLoading');
             
             paymentBtn.disabled = true;
             loadingDiv.classList.add('active');
 
-            // Collect all form data
-            const bookingData = {
-        // HANDLE PAYMENT
-        async function proceedToPayment() {
-            const paymentBtn = document.getElementById('proceedPaymentBtn');
-            const loadingDiv = document.getElementById('paymentLoading');
-            
-            paymentBtn.disabled = true;
-            loadingDiv.classList.add('active');
-
-            // Gather all form data
-            const bookingData = {
-                personal: {
-                    firstName: document.getElementById('firstName').value,
-                    lastName: document.getElementById('lastName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
-                    dob: document.getElementById('dob').value,
-                    emergencyName: document.getElementById('emergencyName').value,
-                    emergencyPhone: document.getElementById('emergencyPhone').value
-                },
-                health: {
-                    chiefComplaint: document.getElementById('chiefComplaint').value,
-                    symptomDuration: document.getElementById('symptomDuration').value,
-                    symptoms: Array.from(document.querySelectorAll('input[name="symptoms"]:checked'))
-                        .map(cb => cb.value),
-                    medications: document.getElementById('medications').value,
-                    allergies: document.getElementById('allergies').value
-                },
-                consents: {
-                    hipaa: document.getElementById('consentHipaa').checked,
-                    telehealth: document.getElementById('consentTelehealth').checked,
-                    recording: document.getElementById('consentRecording').checked
-                },
-                service: selectedService,
-                selectedTime: selectedTime
-            };
-
             try {
-                // CREATE BOOKING FIRST (Original working flow!)
+                // Gather all form data
+                const bookingData = {
+                    personal: {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value,
+                        dob: document.getElementById('dob').value,
+                        emergencyName: document.getElementById('emergencyName').value,
+                        emergencyPhone: document.getElementById('emergencyPhone').value
+                    },
+                    health: {
+                        chiefComplaint: document.getElementById('chiefComplaint').value,
+                        symptomDuration: document.getElementById('symptomDuration').value,
+                        symptoms: Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(cb => cb.value),
+                        medications: document.getElementById('medications').value,
+                        allergies: document.getElementById('allergies').value
+                    },
+                    consents: {
+                        hipaa: document.getElementById('consentHipaa').checked,
+                        telehealth: document.getElementById('consentTelehealth').checked,
+                        recording: document.getElementById('consentRecording').checked
+                    },
+                    service: selectedService,
+                    selectedTime: selectedTime
+                };
+
+                console.log('Creating booking with service:', selectedService);
+
+                // Create booking in Square FIRST
                 const response = await fetch('/api/booking', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1040,38 +1022,49 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Booking created! Now redirect to payment
+                    console.log('Booking created successfully:', result.bookingId);
+                    
+                    // Map variation IDs to payment links
                     const paymentLinks = {
-                        'LDJS2FCCQ3TVI5YKU6ZTGJZI': 'https://square.link/u/seXJR3vc',  // Comprehensive ($99)
-                        'IEJHSQ6VBA77WQEOD65ZDCES': 'https://square.link/u/IYT3hsZj',  // Follow-up ($75)
-                        'PRH777UHCBNYQJXZ7BNKZWEA': 'https://square.link/u/0Gfis1tW'   // Acute Care ($50)
+                        '45HRDI4XGITSL4SYOKJKYNK4': 'https://square.link/u/0Gfis1tW',   // Acute Care - $50
+                        'KOGODBCXVOKARIL3YZ5DVSKS': 'https://square.link/u/IYT3hsZj',  // Follow-up - $75
+                        'EOS5TK4VKO6YGM4TYUFMXO2W': 'https://square.link/u/seXJR3vc'   // Comprehensive - $99
                     };
 
-                    const paymentLink = paymentLinks[selectedService.id];
+                    const paymentLink = paymentLinks[selectedService.variationId];
+                    
+                    console.log('Looking for payment link with variationId:', selectedService.variationId);
+                    console.log('Found payment link:', paymentLink);
                     
                     if (paymentLink) {
-                        // Show success message briefly, then redirect
-                        loadingDiv.innerHTML = `
-                            <div class="spinner"></div>
-                            <h3 style="color: #4caf50; margin-top: 20px;">✓ Appointment Created!</h3>
-                            <p>Redirecting to payment...</p>
-                        `;
-                        
-                        // Redirect to payment after 2 seconds
-                        setTimeout(() => {
-                            window.location.href = paymentLink;
-                        }, 2000);
+                        // Redirect to Square payment
+                        window.location.href = paymentLink;
                     } else {
-                        throw new Error('Payment link not configured');
+                        showError('Payment link not configured for this service. Please contact support.');
+                        paymentBtn.disabled = false;
+                        loadingDiv.classList.remove('active');
                     }
                 } else {
-                    throw new Error(result.error || 'Failed to create booking');
+                    throw new Error(result.error || 'Booking failed');
                 }
             } catch (error) {
-                showError('Booking error: ' + error.message);
+                console.error('Booking error:', error);
+                showError(error.message);
                 paymentBtn.disabled = false;
                 loadingDiv.classList.remove('active');
             }
+        }
+
+        function proceedToPayment() {
+            if (!validateStep(5)) {
+                return;
+            }
+            
+            // Show appointment summary
+            showAppointmentSummary();
+            
+            // Move to payment step
+            nextStep(6);
         }
 
         // STEP NAVIGATION
@@ -1159,9 +1152,6 @@
                         showError('Please select an appointment time');
                         return false;
                     }
-                    break;
-                case 6:
-                    // All validations already done
                     break;
             }
             return true;
