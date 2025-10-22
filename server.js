@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { Client, Environment } = require('square');
-const sgMail = require('@sendgrid/mail');
 
 const app = express();
 
@@ -18,14 +17,10 @@ const squareClient = new Client({
         : Environment.Sandbox
 });
 
-// SendGrid Setup
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
 // Configuration
 const LOCATION_ID = 'LT1S9BE1EX0PW';
 const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID'; // Patrick Smith
 const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
-const PROVIDER_EMAIL = process.env.PROVIDER_EMAIL || 'pjawelllness@outlook.com';
 
 // Helper function to handle BigInt serialization
 function fixBigInt(obj) {
@@ -67,8 +62,16 @@ CONSENTS:
 - Telehealth Informed Consent: ${consents.telehealth ? 'Agreed' : 'Not agreed'}
 - Session Recording: ${consents.recording ? 'Consented' : 'Declined'}
 
-VIDEO CONSULTATION LINK:
-https://doxy.me/PatrickPJAwellness
+📹 VIDEO CONSULTATION:
+Patient joins at: https://doxy.me/PatrickPJAwellness
+Provider joins at: https://doxy.me/PatrickPJAwellness/provider
+
+INSTRUCTIONS FOR PATIENT:
+1. At appointment time, click the patient link above
+2. You'll enter a virtual waiting room
+3. Patrick will admit you to the video call
+4. Ensure camera and microphone are working
+5. Find a quiet, private space for the consultation
 
 FORM COMPLETED: ${new Date().toISOString()}
 `.trim();
@@ -79,7 +82,10 @@ function buildPatientNote(health) {
     return `Chief Complaint: ${health.chiefComplaint}
 
 Duration: ${health.symptomDuration}
-Symptoms: ${health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None reported'}`;
+Symptoms: ${health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None reported'}
+
+📹 VIDEO LINK: https://doxy.me/PatrickPJAwellness
+At your appointment time, click the link above to join your video consultation.`;
 }
 
 // Helper function to build provider note (for seller_note field)
@@ -103,248 +109,59 @@ CONSENTS:
 - Telehealth: ${consents.telehealth ? 'Yes' : 'No'}
 - Recording: ${consents.recording ? 'Yes' : 'No'}
 
-PATIENT VIDEO LINK: https://doxy.me/PatrickPJAwellness
-PROVIDER LINK: https://doxy.me/PatrickPJAwellness/provider`;
-}
-
-// UPDATED: Email sending functions using SendGrid Web API
-async function sendPatientConfirmation(personal, service, selectedTime) {
-    const appointmentDate = new Date(selectedTime.startAt);
-    const formattedDate = appointmentDate.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
-    
-    const msg = {
-        to: personal.email,
-        from: {
-            email: 'pjawelllness@outlook.com',
-            name: 'PJA Wellness'
-        },
-        subject: `Appointment Confirmed - ${service.name}`,
-        html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2c5f2d;">Appointment Confirmed ✓</h2>
-            
-            <p>Dear ${personal.firstName} ${personal.lastName},</p>
-            
-            <p>Your telehealth appointment has been confirmed!</p>
-            
-            <div style="background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                <h3 style="margin-top: 0;">Appointment Details:</h3>
-                <p><strong>Service:</strong> ${service.name}</p>
-                <p><strong>Date:</strong> ${formattedDate}</p>
-                <p><strong>Time:</strong> ${selectedTime.time} EST</p>
-                <p><strong>Duration:</strong> ${service.duration} minutes</p>
-                <p><strong>Price:</strong> $${service.price}</p>
-            </div>
-            
-            <div style="background-color: #e8f4e8; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                <h3 style="margin-top: 0;">📹 Join Your Video Consultation</h3>
-                <p>At your appointment time, click this link to join:</p>
-                <p style="text-align: center; margin: 20px 0;">
-                    <a href="https://doxy.me/PatrickPJAwellness" 
-                       style="background-color: #2c5f2d; color: white; padding: 12px 30px; 
-                              text-decoration: none; border-radius: 5px; display: inline-block;">
-                        Join Video Call
-                    </a>
-                </p>
-                <p><strong>Video Link:</strong> https://doxy.me/PatrickPJAwellness</p>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <h3>Before Your Appointment:</h3>
-                <ul>
-                    <li>Test your camera and microphone</li>
-                    <li>Find a quiet, private space</li>
-                    <li>Have a list of current medications ready</li>
-                    <li>Prepare any questions for Patrick Smith, your Board Certified Holistic Health Practitioner</li>
-                </ul>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <h3>Need to Reschedule?</h3>
-                <p>Please contact us at least 24 hours in advance:</p>
-                <p>📧 Email: pjawelllness@outlook.com<br>
-                   📞 Phone: (248) 794-7135</p>
-            </div>
-            
-            <hr style="margin: 30px 0;">
-            
-            <p style="font-size: 12px; color: #666;">
-                <strong>PJA Wellness - Telehealth Services</strong><br>
-                Sterling Heights, Michigan<br>
-                This is a HIPAA-compliant telehealth service.
-            </p>
-        </div>
-        `
-    };
-    
-    try {
-        await sgMail.send(msg);
-        console.log('✅ Patient confirmation email sent to:', personal.email);
-    } catch (error) {
-        console.error('❌ Failed to send patient email:', error);
-        // Don't throw error - appointment is still created
-    }
-}
-
-async function sendProviderNotification(personal, health, consents, service, selectedTime) {
-    const appointmentDate = new Date(selectedTime.startAt);
-    const formattedDate = appointmentDate.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
-    
-    const msg = {
-        to: PROVIDER_EMAIL,
-        from: {
-            email: 'pjawelllness@outlook.com',
-            name: 'PJA Wellness Booking System'
-        },
-        subject: `New Appointment: ${personal.firstName} ${personal.lastName} - ${selectedTime.time}`,
-        html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2c5f2d;">🆕 New Telehealth Appointment</h2>
-            
-            <div style="background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                <h3 style="margin-top: 0;">Appointment Details:</h3>
-                <p><strong>Service:</strong> ${service.name}</p>
-                <p><strong>Date:</strong> ${formattedDate}</p>
-                <p><strong>Time:</strong> ${selectedTime.time} EST</p>
-                <p><strong>Duration:</strong> ${service.duration} minutes</p>
-            </div>
-            
-            <div style="background-color: #fff3cd; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                <h3 style="margin-top: 0;">Patient Information:</h3>
-                <p><strong>Name:</strong> ${personal.firstName} ${personal.lastName}</p>
-                <p><strong>DOB:</strong> ${personal.dob}</p>
-                <p><strong>Email:</strong> ${personal.email}</p>
-                <p><strong>Phone:</strong> ${personal.phone}</p>
-                <p><strong>Emergency Contact:</strong> ${personal.emergencyName || 'Not provided'} 
-                   (${personal.emergencyPhone || 'Not provided'})</p>
-            </div>
-            
-            <div style="background-color: #e8f4e8; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                <h3 style="margin-top: 0;">Chief Complaint:</h3>
-                <p>${health.chiefComplaint}</p>
-                <p><strong>Duration:</strong> ${health.symptomDuration}</p>
-                <p><strong>Symptoms:</strong> ${health.symptoms.join(', ')}</p>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <h3>Medical History:</h3>
-                <p><strong>Medications:</strong> ${health.medications || 'None reported'}</p>
-                <p><strong>Allergies:</strong> ${health.allergies || 'None reported'}</p>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <h3>Consents:</h3>
-                <p>✓ HIPAA Privacy Notice: ${consents.hipaa ? 'Acknowledged' : 'NOT acknowledged'}</p>
-                <p>✓ Telehealth Consent: ${consents.telehealth ? 'Agreed' : 'NOT agreed'}</p>
-                <p>✓ Session Recording: ${consents.recording ? 'Consented' : 'Declined'}</p>
-            </div>
-            
-            <div style="background-color: #d1ecf1; padding: 20px; margin: 20px 0; border-radius: 5px;">
-                <h3 style="margin-top: 0;">📹 Provider Portal:</h3>
-                <p style="text-align: center; margin: 20px 0;">
-                    <a href="https://doxy.me/PatrickPJAwellness/provider" 
-                       style="background-color: #2c5f2d; color: white; padding: 12px 30px; 
-                              text-decoration: none; border-radius: 5px; display: inline-block;">
-                        Join Provider Room
-                    </a>
-                </p>
-                <p><strong>Provider Link:</strong> https://doxy.me/PatrickPJAwellness/provider</p>
-            </div>
-            
-            <hr style="margin: 30px 0;">
-            
-            <p style="font-size: 12px; color: #666;">
-                This appointment was booked through the PJA Wellness Telehealth platform.
-            </p>
-        </div>
-        `
-    };
-    
-    try {
-        await sgMail.send(msg);
-        console.log('✅ Provider notification email sent to:', PROVIDER_EMAIL);
-    } catch (error) {
-        console.error('❌ Failed to send provider email:', error);
-        // Don't throw error - appointment is still created
-    }
+📹 DOXY.ME LINKS:
+Patient Link: https://doxy.me/PatrickPJAwellness
+Provider Portal: https://doxy.me/PatrickPJAwellness/provider`;
 }
 
 // HEALTH CHECK ENDPOINT
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy',
-        service: 'pja-telehealth',
-        timestamp: new Date().toISOString(),
-        location: LOCATION_ID
+        timestamp: new Date().toISOString()
     });
 });
 
-// SERVICES ENDPOINT - Get telehealth services
+// SERVICES ENDPOINT - Get all telehealth services
 app.get('/api/services', async (req, res) => {
     try {
-        console.log('📋 Searching for telehealth services...');
+        console.log('📋 Fetching telehealth services...');
         
-        // Use searchCatalogObjects with text_query for keyword search
-        const result = await squareClient.catalogApi.searchCatalogObjects({
-            objectTypes: ["ITEM"],
+        const response = await squareClient.catalogApi.searchCatalogObjects({
+            objectTypes: ['ITEM'],
             query: {
                 textQuery: {
-                    keywords: ["telehealth"]
+                    keywords: ['telehealth']
                 }
             }
         });
 
-        console.log(`✅ Found ${result.result.objects?.length || 0} objects from Square`);
-
-        // Filter and map the services
-        const services = (result.result.objects || [])
-            .filter(obj => {
-                // Only include APPOINTMENTS_SERVICE items with "telehealth" in the name
-                const name = obj.itemData?.name || '';
-                const productType = obj.itemData?.productType;
-                return productType === 'APPOINTMENTS_SERVICE' && 
-                       name.toLowerCase().includes('telehealth');
-            })
-            .map(obj => {
-                const variation = obj.itemData?.variations?.[0];
+        const services = (response.result.objects || [])
+            .filter(item => item.type === 'ITEM' && item.itemData?.productType === 'APPOINTMENTS_SERVICE')
+            .map(item => {
+                const variation = item.itemData.variations?.[0];
                 const priceAmount = variation?.itemVariationData?.priceMoney?.amount;
-                const durationMs = variation?.itemVariationData?.serviceDuration;
+                const serviceDuration = variation?.itemVariationData?.serviceDuration;
                 
-                // Convert BigInt to Number BEFORE doing any math
-                const priceInCents = typeof priceAmount === 'bigint' 
-                    ? Number(priceAmount) 
-                    : (priceAmount || 0);
+                // Convert BigInt to Number before operations
+                const priceInCents = typeof priceAmount === 'bigint' ? Number(priceAmount) : priceAmount;
+                const durationMs = typeof serviceDuration === 'bigint' ? Number(serviceDuration) : serviceDuration;
                 
-                // Convert duration BigInt to Number BEFORE doing any math
-                const durationInMs = typeof durationMs === 'bigint'
-                    ? Number(durationMs)
-                    : (durationMs || 3600000);
-
                 return {
-                    id: String(variation?.id || ''),
-                    variationId: String(variation?.id || ''),
-                    name: obj.itemData?.name || '',
-                    description: obj.itemData?.description || '',
+                    id: item.id,
+                    name: item.itemData.name,
+                    description: item.itemData.description || '',
                     price: (priceInCents / 100).toFixed(2),
-                    duration: durationInMs / 60000
+                    duration: Math.floor(durationMs / 60000), // Convert ms to minutes
+                    variationId: variation?.id,
+                    variationVersion: variation?.version ? String(variation.version) : '1'
                 };
             });
 
-        console.log(`✅ Returning ${services.length} telehealth services`);
-        
+        console.log(`✅ Found ${services.length} telehealth services`);
         res.json({ services });
     } catch (error) {
-        console.error('❌ Error fetching services:', error);
+        console.error('❌ Services error:', error);
         res.status(500).json({ 
             error: 'Failed to fetch services',
             details: error.message 
@@ -352,40 +169,40 @@ app.get('/api/services', async (req, res) => {
     }
 });
 
-// AVAILABILITY CHECK ENDPOINT
+// AVAILABILITY ENDPOINT - Get available appointment slots
 app.post('/api/availability', async (req, res) => {
     try {
-        const { date, serviceId } = req.body;
+        const { serviceVariationId, date } = req.body;
         
-        console.log(`🗓️ Checking availability for ${date}, service: ${serviceId}`);
+        console.log('📅 Checking availability for:', { serviceVariationId, date });
         
-        // Search for available appointment slots - Square handles all logic
-        // This automatically excludes times when Patrick has existing bookings
-        const searchBody = {
+        // Create date range for the selected day
+        const startDate = new Date(date);
+        startDate.setHours(0, 0, 0, 0);
+        
+        const endDate = new Date(date);
+        endDate.setHours(23, 59, 59, 999);
+
+        const response = await squareClient.bookingsApi.searchAvailability({
             query: {
                 filter: {
-                    locationId: LOCATION_ID,
                     startAtRange: {
-                        startAt: `${date}T00:00:00Z`,
-                        endAt: `${date}T23:59:59Z`
+                        startAt: startDate.toISOString(),
+                        endAt: endDate.toISOString()
                     },
+                    locationId: LOCATION_ID,
                     segmentFilters: [{
-                        serviceVariationId: serviceId,
+                        serviceVariationId: serviceVariationId,
                         teamMemberIdFilter: {
-                            any: ['TMpDyughFdZTf6ID']  // Patrick Smith only
+                            any: [TEAM_MEMBER_ID]
                         }
                     }]
                 }
             }
-        };
-        
-        const response = await squareClient.bookingsApi.searchAvailability(searchBody);
-        
-        console.log(`✅ Square returned ${response.result.availabilities?.length || 0} available slots`);
-        
-        // Just format what Square tells us is available
-        // Square already factors in:
-        // - Patrick's working hours set in Square dashboard
+        });
+
+        // Square's searchAvailability already factors in:
+        // - Provider's working hours from Square Calendar
         // - Existing bookings
         // - Service duration
         // - Time blocks
@@ -415,7 +232,7 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// BOOKING CREATION ENDPOINT
+// BOOKING CREATION ENDPOINT (After payment confirmation)
 app.post('/api/booking', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedTime } = req.body;
@@ -466,7 +283,8 @@ app.post('/api/booking', async (req, res) => {
             console.log('✅ Created new customer:', customerId);
         }
         
-        // UPDATED: Create booking in Square
+        // Create booking in Square
+        // Square will automatically send SMS/Email notifications to the customer!
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
@@ -484,12 +302,8 @@ app.post('/api/booking', async (req, res) => {
         });
         
         console.log('✅ Booking created:', bookingResult.result.booking.id);
-        
-        // Send emails after successful booking
-        await Promise.all([
-            sendPatientConfirmation(personal, service, selectedTime),
-            sendProviderNotification(personal, health, consents, service, selectedTime)
-        ]);
+        console.log('📧 Square will send confirmation email/SMS to patient automatically');
+        console.log('📧 Square will send booking notification to provider');
         
         res.json({
             success: true,
@@ -500,7 +314,8 @@ app.post('/api/booking', async (req, res) => {
                 time: selectedTime.time,
                 duration: `${service.duration} minutes`,
                 price: `$${service.price}`,
-                videoLink: 'https://doxy.me/PatrickPJAwellness'
+                videoLink: 'https://doxy.me/PatrickPJAwellness',
+                message: 'Check your email/SMS for your appointment confirmation with video link!'
             }
         });
         
@@ -594,7 +409,7 @@ app.listen(PORT, () => {
 🔒 Environment: ${process.env.SQUARE_ENVIRONMENT || 'production'}
 🎥 Patient Video Link: https://doxy.me/PatrickPJAwellness
 👨‍⚕️ Provider Portal: https://doxy.me/PatrickPJAwellness/provider
-📧 Email Notifications: ${process.env.SENDGRID_API_KEY ? 'ENABLED' : 'DISABLED'}
+📧 Notifications: Square SMS/Email (Automatic)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
 });
