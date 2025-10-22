@@ -993,6 +993,16 @@
 
             // Collect all form data
             const bookingData = {
+        // HANDLE PAYMENT
+        async function proceedToPayment() {
+            const paymentBtn = document.getElementById('proceedPaymentBtn');
+            const loadingDiv = document.getElementById('paymentLoading');
+            
+            paymentBtn.disabled = true;
+            loadingDiv.classList.add('active');
+
+            // Gather all form data
+            const bookingData = {
                 personal: {
                     firstName: document.getElementById('firstName').value,
                     lastName: document.getElementById('lastName').value,
@@ -1019,49 +1029,8 @@
                 selectedTime: selectedTime
             };
 
-            // Store booking data in localStorage (will be used after payment)
-            localStorage.setItem('pendingBooking', JSON.stringify(bookingData));
-
-            // Payment links for each service
-            const paymentLinks = {
-                'LDJS2FCCQ3TVI5YKU6ZTGJZI': 'https://square.link/u/seXJR3vc',  // Comprehensive Wellness
-                'IEJHSQ6VBA77WQEOD65ZDCES': 'https://square.link/u/IYT3hsZj',  // Follow-up
-                'PRH777UHCBNYQJXZ7BNKZWEA': 'https://square.link/u/0Gfis1tW'   // Acute Care
-            };
-
-            const paymentLink = paymentLinks[selectedService.id];
-            
-            if (paymentLink) {
-                // Redirect to payment with return URL
-                window.location.href = paymentLink + '?redirect_url=' + encodeURIComponent(window.location.origin + '?payment=complete');
-            } else {
-                showError('Payment link not configured. Please contact support.');
-                paymentBtn.disabled = false;
-                loadingDiv.classList.remove('active');
-            }
-        }
-
-        // COMPLETE BOOKING AFTER PAYMENT
-        async function completeBookingAfterPayment() {
-            const pendingBooking = localStorage.getItem('pendingBooking');
-            
-            if (!pendingBooking) {
-                showError('No pending booking found. Please start over.');
-                return;
-            }
-
-            const bookingData = JSON.parse(pendingBooking);
-            
-            // Show loading
-            document.body.innerHTML = `
-                <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
-                    <div class="spinner"></div>
-                    <h2 style="margin-top: 20px;">Creating your appointment...</h2>
-                    <p>Please wait while we confirm your booking.</p>
-                </div>
-            `;
-
             try {
+                // CREATE BOOKING FIRST (Original working flow!)
                 const response = await fetch('/api/booking', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1071,63 +1040,37 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Clear pending booking
-                    localStorage.removeItem('pendingBooking');
+                    // Booking created! Now redirect to payment
+                    const paymentLinks = {
+                        'LDJS2FCCQ3TVI5YKU6ZTGJZI': 'https://square.link/u/seXJR3vc',  // Comprehensive ($99)
+                        'IEJHSQ6VBA77WQEOD65ZDCES': 'https://square.link/u/IYT3hsZj',  // Follow-up ($75)
+                        'PRH777UHCBNYQJXZ7BNKZWEA': 'https://square.link/u/0Gfis1tW'   // Acute Care ($50)
+                    };
+
+                    const paymentLink = paymentLinks[selectedService.id];
                     
-                    // Show success message
-                    document.body.innerHTML = `
-                        <div class="container" style="margin-top: 50px;">
-                            <div class="header">
-                                <h1>✓ Appointment Confirmed!</h1>
-                                <p>Your telehealth consultation has been scheduled</p>
-                            </div>
-                            <div class="content">
-                                <div style="background: #e8f5e9; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
-                                    <h2 style="color: #2e7d32; margin-bottom: 20px;">Booking Details</h2>
-                                    <p><strong>Service:</strong> ${result.confirmation.service}</p>
-                                    <p><strong>Date:</strong> ${result.confirmation.date}</p>
-                                    <p><strong>Time:</strong> ${result.confirmation.time}</p>
-                                    <p><strong>Duration:</strong> ${result.confirmation.duration}</p>
-                                    <p><strong>Price:</strong> ${result.confirmation.price}</p>
-                                </div>
-                                <div style="background: #e3f2fd; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
-                                    <h3 style="color: #1976d2; margin-bottom: 15px;">📹 Video Consultation Link</h3>
-                                    <p>At your appointment time, click this link to join:</p>
-                                    <p style="text-align: center; margin: 20px 0;">
-                                        <a href="${result.confirmation.videoLink}" target="_blank" 
-                                           style="background: #1976d2; color: white; padding: 15px 30px; 
-                                                  text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
-                                            Join Video Call
-                                        </a>
-                                    </p>
-                                    <p style="word-break: break-all;"><strong>Link:</strong> ${result.confirmation.videoLink}</p>
-                                </div>
-                                <div style="background: #fff3e0; padding: 20px; border-radius: 15px; margin-bottom: 30px;">
-                                    <p><strong>📧 ${result.confirmation.message}</strong></p>
-                                    <p style="margin-top: 10px;">Square will send you an email and/or SMS with your appointment details and video link.</p>
-                                </div>
-                                <div style="text-align: center;">
-                                    <button class="btn btn-primary" onclick="window.location.href='/'">Book Another Appointment</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    if (paymentLink) {
+                        // Show success message briefly, then redirect
+                        loadingDiv.innerHTML = `
+                            <div class="spinner"></div>
+                            <h3 style="color: #4caf50; margin-top: 20px;">✓ Appointment Created!</h3>
+                            <p>Redirecting to payment...</p>
+                        `;
+                        
+                        // Redirect to payment after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = paymentLink;
+                        }, 2000);
+                    } else {
+                        throw new Error('Payment link not configured');
+                    }
                 } else {
-                    throw new Error(result.error || 'Booking failed');
+                    throw new Error(result.error || 'Failed to create booking');
                 }
             } catch (error) {
-                document.body.innerHTML = `
-                    <div class="container" style="margin-top: 50px;">
-                        <div class="content">
-                            <div class="error-message" style="display: block;">
-                                <h3>Booking Error</h3>
-                                <p>${error.message}</p>
-                                <p>Your payment was processed, but we encountered an issue creating your appointment. Please contact us at (248) 794-7135 or pjawelllness@outlook.com.</p>
-                            </div>
-                            <button class="btn btn-primary" onclick="window.location.href='/'">Return to Home</button>
-                        </div>
-                    </div>
-                `;
+                showError('Booking error: ' + error.message);
+                paymentBtn.disabled = false;
+                loadingDiv.classList.remove('active');
             }
         }
 
