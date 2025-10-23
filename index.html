@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PJA Wellness - Telehealth Consultations</title>
+    <!-- Square Web Payments SDK -->
+    <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
     <style>
         * {
             margin: 0;
@@ -791,11 +793,11 @@
 
             <!-- Step 6: Payment -->
             <div class="form-section" id="section6">
-                <h2>Complete Payment</h2>
+                <h2>💳 Complete Payment</h2>
                 
                 <div class="payment-warning">
-                    <h3>⚡ Important</h3>
-                    <p>Your appointment has been reserved! Click below to complete your payment via Square's secure checkout.</p>
+                    <h3>🔒 Secure Payment Required</h3>
+                    <p>Complete your payment below to confirm your appointment. Your card information is processed securely by Square.</p>
                 </div>
 
                 <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
@@ -803,15 +805,22 @@
                     <div id="appointmentSummary"></div>
                 </div>
 
-                <div class="loading" id="paymentLoading">
+                <!-- Square Payment Form Container -->
+                <div style="background: white; padding: 30px; border-radius: 15px; border: 2px solid #e0e0e0; margin: 30px 0;">
+                    <h3 style="margin-bottom: 20px;">💳 Payment Information</h3>
+                    <div id="card-container" style="margin-bottom: 20px;"></div>
+                    <div id="payment-status-container"></div>
+                </div>
+
+                <div class="loading" id="paymentLoading" style="display: none;">
                     <div class="spinner"></div>
-                    <p>Processing your booking...</p>
+                    <p>Processing your payment and booking...</p>
                 </div>
 
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="previousStep(5)">Back</button>
-                    <button class="btn btn-primary" id="proceedToPaymentBtn" onclick="createBookingAndRedirect()">
-                        Proceed to Secure Payment →
+                    <button class="btn btn-primary" id="card-button" style="display: none;">
+                        Complete Payment & Book Appointment ($<span id="payment-amount">0</span>)
                     </button>
                 </div>
             </div>
@@ -857,6 +866,8 @@
         let selectedService = null;
         let selectedTime = null;
         let availableServices = [];
+        let payments;
+        let card;
 
         // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
@@ -974,85 +985,158 @@
             selectedTime = { startAt, time };
         }
 
-        // CREATE BOOKING AND REDIRECT TO PAYMENT (ORIGINAL FLOW RESTORED)
-        async function createBookingAndRedirect() {
-            const paymentBtn = document.getElementById('proceedToPaymentBtn');
+        // SQUARE PAYMENTS VARIABLES
+        let payments;
+        let card;
+
+        // INITIALIZE SQUARE PAYMENTS
+        async function initializeSquarePayments() {
+            try {
+                payments = Square.payments('sq0idp-aPFZ8KXI6fGJJWdCZKhDfg', 'LT1S9BE1EX0PW');
+                
+                card = await payments.card();
+                await card.attach('#card-container');
+                
+                document.getElementById('card-button').style.display = 'block';
+                document.getElementById('payment-amount').textContent = selectedService.price;
+                
+                const cardButton = document.getElementById('card-button');
+                cardButton.onclick = processPaymentAndBooking;
+                
+            } catch (error) {
+                console.error('Failed to initialize Square payments:', error);
+                showError('Failed to load payment form. Please refresh the page and try again.');
+            }
+        }
+
+        // PROCESS PAYMENT AND CREATE BOOKING
+        async function processPaymentAndBooking() {
+            const paymentBtn = document.getElementById('card-button');
             const loadingDiv = document.getElementById('paymentLoading');
+            const statusContainer = document.getElementById('payment-status-container');
             
             paymentBtn.disabled = true;
-            loadingDiv.classList.add('active');
+            paymentBtn.textContent = 'Processing...';
+            loadingDiv.style.display = 'block';
+            statusContainer.innerHTML = '';
 
             try {
-                // Gather all form data
-                const bookingData = {
-                    personal: {
-                        firstName: document.getElementById('firstName').value,
-                        lastName: document.getElementById('lastName').value,
-                        email: document.getElementById('email').value,
-                        phone: document.getElementById('phone').value,
-                        dob: document.getElementById('dob').value,
-                        emergencyName: document.getElementById('emergencyName').value,
-                        emergencyPhone: document.getElementById('emergencyPhone').value
-                    },
-                    health: {
-                        chiefComplaint: document.getElementById('chiefComplaint').value,
-                        symptomDuration: document.getElementById('symptomDuration').value,
-                        symptoms: Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(cb => cb.value),
-                        medications: document.getElementById('medications').value,
-                        allergies: document.getElementById('allergies').value
-                    },
-                    consents: {
-                        hipaa: document.getElementById('consentHipaa').checked,
-                        telehealth: document.getElementById('consentTelehealth').checked,
-                        recording: document.getElementById('consentRecording').checked
-                    },
-                    service: selectedService,
-                    selectedTime: selectedTime
-                };
-
-                console.log('Creating booking with service:', selectedService);
-
-                // Create booking in Square FIRST
-                const response = await fetch('/api/booking', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookingData)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    console.log('Booking created successfully:', result.bookingId);
+                console.log('Starting payment process...');
+                
+                const result = await card.tokenize();
+                if (result.status === 'OK') {
+                    console.log('✅ Card tokenized successfully');
                     
-                    // Map variation IDs to payment links
-                    const paymentLinks = {
-                        '45HRDI4XGITSL4SYOKJKYNK4': 'https://square.link/u/0Gfis1tW',   // Acute Care - $50
-                        'KOGODBCXVOKARIL3YZ5DVSKS': 'https://square.link/u/IYT3hsZj',  // Follow-up - $75
-                        'EOS5TK4VKO6YGM4TYUFMXO2W': 'https://square.link/u/seXJR3vc'   // Comprehensive - $99
+                    const bookingData = {
+                        sourceId: result.token,
+                        personal: {
+                            firstName: document.getElementById('firstName').value,
+                            lastName: document.getElementById('lastName').value,
+                            email: document.getElementById('email').value,
+                            phone: document.getElementById('phone').value,
+                            dob: document.getElementById('dob').value,
+                            emergencyName: document.getElementById('emergencyName').value,
+                            emergencyPhone: document.getElementById('emergencyPhone').value
+                        },
+                        health: {
+                            chiefComplaint: document.getElementById('chiefComplaint').value,
+                            symptomDuration: document.getElementById('symptomDuration').value,
+                            symptoms: Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(cb => cb.value),
+                            medications: document.getElementById('medications').value,
+                            allergies: document.getElementById('allergies').value
+                        },
+                        consents: {
+                            hipaa: document.getElementById('consentHipaa').checked,
+                            telehealth: document.getElementById('consentTelehealth').checked,
+                            recording: document.getElementById('consentRecording').checked
+                        },
+                        service: selectedService,
+                        selectedTime: selectedTime
                     };
 
-                    const paymentLink = paymentLinks[selectedService.variationId];
+                    console.log('Sending payment and booking data to server...');
                     
-                    console.log('Looking for payment link with variationId:', selectedService.variationId);
-                    console.log('Found payment link:', paymentLink);
-                    
-                    if (paymentLink) {
-                        // Redirect to Square payment
-                        window.location.href = paymentLink;
+                    const response = await fetch('/api/process-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookingData)
+                    });
+
+                    const apiResult = await response.json();
+
+                    if (apiResult.success) {
+                        console.log('✅ Payment processed and booking created!');
+                        
+                        statusContainer.innerHTML = `
+                            <div style="background: #4CAF50; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h3>✅ Payment Successful!</h3>
+                                <p>Your appointment has been confirmed.</p>
+                            </div>
+                        `;
+                        
+                        setTimeout(() => {
+                            showConfirmation(apiResult.confirmation);
+                        }, 2000);
+                        
                     } else {
-                        showError('Payment link not configured for this service. Please contact support.');
-                        paymentBtn.disabled = false;
-                        loadingDiv.classList.remove('active');
+                        throw new Error(apiResult.error || 'Payment or booking failed');
                     }
+                    
                 } else {
-                    throw new Error(result.error || 'Booking failed');
+                    console.error('Tokenization error:', result.errors);
+                    throw new Error('Card payment failed. Please check your card details and try again.');
                 }
+                
             } catch (error) {
-                console.error('Booking error:', error);
-                showError(error.message);
+                console.error('Payment error:', error);
+                statusContainer.innerHTML = `
+                    <div style="background: #f44336; color: white; padding: 15px; border-radius: 10px;">
+                        <strong>⚠️ Payment Failed:</strong> ${error.message}
+                    </div>
+                `;
                 paymentBtn.disabled = false;
-                loadingDiv.classList.remove('active');
+                paymentBtn.textContent = 'Complete Payment & Book Appointment ($' + selectedService.price + ')';
+                loadingDiv.style.display = 'none';
             }
+        }
+
+        // SHOW CONFIRMATION PAGE
+        function showConfirmation(confirmation) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const container = document.querySelector('.content');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #4CAF50; margin-bottom: 30px;">Appointment Confirmed!</h2>
+                    
+                    <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin: 30px 0; text-align: left;">
+                        <h3 style="margin-bottom: 20px;">📅 Appointment Details</h3>
+                        <p><strong>Service:</strong> ${confirmation.service}</p>
+                        <p><strong>Date:</strong> ${confirmation.date}</p>
+                        <p><strong>Time:</strong> ${confirmation.time}</p>
+                        <p><strong>Duration:</strong> ${confirmation.duration}</p>
+                        <p><strong>Amount Paid:</strong> ${confirmation.price}</p>
+                    </div>
+                    
+                    <div style="background: #e8f5e9; padding: 25px; border-radius: 15px; margin: 30px 0;">
+                        <h3 style="color: #2e7d32; margin-bottom: 15px;">📹 Video Consultation Link</h3>
+                        <p style="margin-bottom: 15px;">At your appointment time, join your video call at:</p>
+                        <a href="${confirmation.videoLink}" target="_blank" style="display: inline-block; background: #4CAF50; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 10px 0;">
+                            Join Video Call
+                        </a>
+                        <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                            ${confirmation.message}
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top: 40px;">
+                        <button class="btn btn-primary" onclick="location.reload()">Book Another Appointment</button>
+                    </div>
+                </div>
+            `;
         }
 
         function proceedToPayment() {
@@ -1074,9 +1158,10 @@
                 return;
             }
 
-            // Show appointment summary on payment step
+            // Show appointment summary and initialize payments on payment step
             if (step === 6) {
                 showAppointmentSummary();
+                initializeSquarePayments();
             }
 
             // Hide current step
