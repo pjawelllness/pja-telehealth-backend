@@ -24,8 +24,9 @@ const squareClient = new Client({
 const LOCATION_ID = 'LT1S9BE1EX0PW';
 const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID';
 const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
+const SQUARE_APPLICATION_ID = process.env.SQUARE_APPLICATION_ID || 'sq0idp-aPFZ8KXI6fGJJWdCZKhDfg';
 
-// Helper function to build comprehensive customer note
+// Helper functions
 function buildCustomerNote(personal, health, consents) {
     return `
 PATIENT INTAKE FORM
@@ -113,6 +114,14 @@ app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy',
         timestamp: new Date().toISOString()
+    });
+});
+
+// NEW: SQUARE CONFIG ENDPOINT - Provides Square credentials to frontend
+app.get('/api/square-config', (req, res) => {
+    res.json({
+        applicationId: SQUARE_APPLICATION_ID,
+        locationId: LOCATION_ID
     });
 });
 
@@ -491,6 +500,7 @@ app.listen(PORT, () => {
 🏥 Location: ${LOCATION_ID}
 👨‍⚕️ Provider: Patrick Smith (${TEAM_MEMBER_ID})
 🔒 Environment: ${process.env.SQUARE_ENVIRONMENT || 'production'}
+💳 Square App ID: ${SQUARE_APPLICATION_ID}
 🎥 Patient Video Link: https://doxy.me/PatrickPJAwellness
 👨‍⚕️ Provider Portal: https://doxy.me/PatrickPJAwellness/provider
 📧 Notifications: Square SMS/Email (Automatic)
