@@ -27,10 +27,17 @@ const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
 const SQUARE_APPLICATION_ID = process.env.SQUARE_APPLICATION_ID || 'sq0idp-aPFZ8KXI6fGJJWdCZKhDfg';
 
 // Helper functions
-function buildCustomerNote(personal, health, consents) {
+function generateAccessCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function buildCustomerNote(personal, health, consents, accessCode) {
     return `
 PATIENT INTAKE FORM
 ===================
+
+🔐 PATIENT ACCESS CODE: ${accessCode}
+(Use this code to view your appointment details)
 
 PERSONAL INFORMATION:
 - Name: ${personal.firstName} ${personal.lastName}
@@ -74,18 +81,24 @@ FORM COMPLETED: ${new Date().toISOString()}
 `.trim();
 }
 
-function buildPatientNote(health) {
-    return `Chief Complaint: ${health.chiefComplaint}
+function buildPatientNote(health, accessCode) {
+    return `🔐 ACCESS CODE: ${accessCode}
+
+Chief Complaint: ${health.chiefComplaint}
 
 Duration: ${health.symptomDuration}
 Symptoms: ${health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None reported'}
 
 📹 VIDEO LINK: https://doxy.me/PatrickPJAwellness
-At your appointment time, click the link above to join your video consultation.`;
+At your appointment time, click the link above to join your video consultation.
+
+To view your appointment details anytime, visit our website and use your 6-digit access code: ${accessCode}`;
 }
 
-function buildProviderNote(personal, health, consents) {
-    return `PATIENT: ${personal.firstName} ${personal.lastName}
+function buildProviderNote(personal, health, consents, accessCode) {
+    return `🔐 PATIENT ACCESS CODE: ${accessCode}
+
+PATIENT: ${personal.firstName} ${personal.lastName}
 DOB: ${personal.dob}
 EMAIL: ${personal.email}
 PHONE: ${personal.phone}
@@ -223,12 +236,16 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// BOOKING ENDPOINT (Original)
-app.post('/api/booking', async (req, res) => {
+// BOOKING ENDPOINT (FREE BOOKINGS)
+app.post('/api/bookings', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedTime } = req.body;
         
         console.log('📝 Creating booking for:', personal.email);
+        
+        // Generate unique 6-digit access code
+        const accessCode = generateAccessCode();
+        console.log('🔐 Generated access code:', accessCode);
         
         let customerId = null;
         try {
@@ -251,7 +268,7 @@ app.post('/api/booking', async (req, res) => {
                     familyName: personal.lastName,
                     emailAddress: personal.email,
                     phoneNumber: personal.phone,
-                    note: buildCustomerNote(personal, health, consents)
+                    note: buildCustomerNote(personal, health, consents, accessCode)
                 });
                 console.log('✅ Updated customer information');
             }
@@ -265,12 +282,13 @@ app.post('/api/booking', async (req, res) => {
                 familyName: personal.lastName,
                 emailAddress: personal.email,
                 phoneNumber: personal.phone,
-                note: buildCustomerNote(personal, health, consents)
+                note: buildCustomerNote(personal, health, consents, accessCode)
             });
             customerId = customerResult.result.customer.id;
             console.log('✅ Created new customer:', customerId);
         }
         
+        console.log('📅 Creating booking...');
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
@@ -282,8 +300,8 @@ app.post('/api/booking', async (req, res) => {
                     teamMemberId: TEAM_MEMBER_ID,
                     serviceVariationVersion: BigInt(Date.now())
                 }],
-                customerNote: buildPatientNote(health),
-                sellerNote: buildProviderNote(personal, health, consents)
+                customerNote: buildPatientNote(health, accessCode),
+                sellerNote: buildProviderNote(personal, health, consents, accessCode)
             }
         });
         
@@ -293,6 +311,7 @@ app.post('/api/booking', async (req, res) => {
         res.json({
             success: true,
             bookingId: String(bookingResult.result.booking.id),
+            accessCode: accessCode,
             confirmation: {
                 service: service.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
@@ -320,6 +339,10 @@ app.post('/api/process-payment', async (req, res) => {
         
         console.log('💳 Processing payment for:', personal.email);
         
+        // Generate unique 6-digit access code
+        const accessCode = generateAccessCode();
+        console.log('🔐 Generated access code:', accessCode);
+        
         const amountCents = Math.round(parseFloat(service.price) * 100);
         
         let customerId = null;
@@ -343,7 +366,7 @@ app.post('/api/process-payment', async (req, res) => {
                     familyName: personal.lastName,
                     emailAddress: personal.email,
                     phoneNumber: personal.phone,
-                    note: buildCustomerNote(personal, health, consents)
+                    note: buildCustomerNote(personal, health, consents, accessCode)
                 });
                 console.log('✅ Updated customer information');
             }
@@ -357,7 +380,7 @@ app.post('/api/process-payment', async (req, res) => {
                 familyName: personal.lastName,
                 emailAddress: personal.email,
                 phoneNumber: personal.phone,
-                note: buildCustomerNote(personal, health, consents)
+                note: buildCustomerNote(personal, health, consents, accessCode)
             });
             customerId = customerResult.result.customer.id;
             console.log('✅ Created new customer:', customerId);
@@ -390,8 +413,8 @@ app.post('/api/process-payment', async (req, res) => {
                     teamMemberId: TEAM_MEMBER_ID,
                     serviceVariationVersion: BigInt(Date.now())
                 }],
-                customerNote: buildPatientNote(health),
-                sellerNote: buildProviderNote(personal, health, consents)
+                customerNote: buildPatientNote(health, accessCode),
+                sellerNote: buildProviderNote(personal, health, consents, accessCode)
             }
         });
         
@@ -402,6 +425,7 @@ app.post('/api/process-payment', async (req, res) => {
             success: true,
             paymentId: String(paymentResponse.result.payment.id),
             bookingId: String(bookingResult.result.booking.id),
+            accessCode: accessCode,
             confirmation: {
                 service: service.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
@@ -418,6 +442,112 @@ app.post('/api/process-payment', async (req, res) => {
         res.status(500).json({ 
             error: 'Failed to process payment or create booking',
             details: error.message 
+        });
+    }
+});
+
+// PATIENT LOGIN ENDPOINT (New)
+app.post('/api/patient-login', async (req, res) => {
+    try {
+        const { accessCode, verificationType, verificationValue } = req.body;
+        
+        console.log('🔐 Patient login attempt with access code:', accessCode);
+        
+        // Search for bookings with this access code in the next 90 days
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30); // Also check past 30 days
+        
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 90);
+        
+        const response = await squareClient.bookingsApi.listBookings(
+            undefined,
+            undefined,
+            undefined,
+            TEAM_MEMBER_ID,
+            LOCATION_ID,
+            startDate.toISOString(),
+            endDate.toISOString()
+        );
+        
+        const bookings = response.result.bookings || [];
+        
+        // Find booking with matching access code
+        const matchingBooking = bookings.find(booking => {
+            const hasAccessCode = booking.customerNote?.includes(`ACCESS CODE: ${accessCode}`) ||
+                                 booking.sellerNote?.includes(`ACCESS CODE: ${accessCode}`);
+            
+            if (!hasAccessCode) return false;
+            
+            // Verify additional information based on verificationType
+            const sellerNote = booking.sellerNote || '';
+            
+            switch(verificationType) {
+                case 'email':
+                    return sellerNote.includes(`EMAIL: ${verificationValue}`);
+                case 'phone':
+                    return sellerNote.includes(`PHONE: ${verificationValue}`);
+                case 'dob':
+                    return sellerNote.includes(`DOB: ${verificationValue}`);
+                case 'lastName':
+                    const nameMatch = sellerNote.match(/PATIENT: (.+)/);
+                    if (nameMatch) {
+                        const fullName = nameMatch[1].toLowerCase();
+                        return fullName.includes(verificationValue.toLowerCase());
+                    }
+                    return false;
+                default:
+                    return false;
+            }
+        });
+        
+        if (!matchingBooking) {
+            console.log('❌ No matching appointment found');
+            return res.status(404).json({
+                success: false,
+                error: 'No appointment found with the provided information'
+            });
+        }
+        
+        // Get customer details
+        const customer = await squareClient.customersApi.retrieveCustomer(matchingBooking.customerId);
+        
+        console.log('✅ Patient login successful');
+        res.json({
+            success: true,
+            appointment: {
+                id: String(matchingBooking.id),
+                startAt: String(matchingBooking.startAt),
+                date: new Date(matchingBooking.startAt).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }),
+                time: new Date(matchingBooking.startAt).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'America/New_York'
+                }),
+                duration: matchingBooking.appointmentSegments[0]?.durationMinutes || 0,
+                patient: {
+                    name: `${customer.result.customer.givenName || ''} ${customer.result.customer.familyName || ''}`.trim(),
+                    email: customer.result.customer.emailAddress || '',
+                    phone: customer.result.customer.phoneNumber || ''
+                },
+                videoLink: 'https://doxy.me/PatrickPJAwellness',
+                customerNote: matchingBooking.customerNote,
+                status: matchingBooking.status
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Patient login error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to verify appointment',
+            details: error.message
         });
     }
 });
@@ -505,6 +635,7 @@ app.listen(PORT, () => {
 👨‍⚕️ Provider Portal: https://doxy.me/PatrickPJAwellness/provider
 📧 Notifications: Square SMS/Email (Automatic)
 💳 Payment: Processed BEFORE booking creation
+🔐 Patient Portal: 6-digit access code system enabled
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
 });
