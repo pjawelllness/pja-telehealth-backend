@@ -988,7 +988,15 @@
         // INITIALIZE SQUARE PAYMENTS
         async function initializeSquarePayments() {
             try {
-                payments = Square.payments('sq0idp-aPFZ8KXI6fGJJWdCZKhDfg', 'LT1S9BE1EX0PW');
+                console.log('🔄 Fetching Square configuration...');
+                
+                // Get Square config from server
+                const configResponse = await fetch('/api/square-config');
+                const config = await configResponse.json();
+                
+                console.log('✅ Square config loaded:', config.applicationId);
+                
+                payments = Square.payments(config.applicationId, config.locationId);
                 
                 card = await payments.card();
                 await card.attach('#card-container');
@@ -999,9 +1007,11 @@
                 const cardButton = document.getElementById('card-button');
                 cardButton.onclick = processPaymentAndBooking;
                 
+                console.log('✅ Square payment form ready');
+                
             } catch (error) {
-                console.error('Failed to initialize Square payments:', error);
-                showError('Failed to load payment form. Please refresh the page and try again.');
+                console.error('❌ Failed to initialize Square payments:', error);
+                showError('Failed to load payment form. Please check your Square credentials and refresh the page.');
             }
         }
 
