@@ -985,10 +985,6 @@
             selectedTime = { startAt, time };
         }
 
-        // SQUARE PAYMENTS VARIABLES
-        let payments;
-        let card;
-
         // INITIALIZE SQUARE PAYMENTS
         async function initializeSquarePayments() {
             try {
@@ -1158,7 +1154,7 @@
                 return;
             }
 
-            // Show appointment summary and initialize payments on payment step
+            // Show appointment summary on payment step
             if (step === 6) {
                 showAppointmentSummary();
                 initializeSquarePayments();
