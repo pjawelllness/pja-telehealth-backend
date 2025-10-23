@@ -232,14 +232,17 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// BOOKING CREATION ENDPOINT (After payment confirmation)
-app.post('/api/booking', async (req, res) => {
+// NEW: PAYMENT PROCESSING ENDPOINT - Process payment FIRST, then create booking
+app.post('/api/process-payment', async (req, res) => {
     try {
-        const { personal, health, consents, service, selectedTime } = req.body;
+        const { sourceId, personal, health, consents, service, selectedTime } = req.body;
         
-        console.log('📝 Creating booking for:', personal.email);
+        console.log('💳 Processing payment for:', personal.email);
         
-        // Search for existing customer
+        // Calculate amount in cents
+        const amountCents = Math.round(parseFloat(service.price) * 100);
+        
+        // Step 1: Create/Get Customer
         let customerId = null;
         try {
             const searchResult = await squareClient.customersApi.searchCustomers({
@@ -283,8 +286,24 @@ app.post('/api/booking', async (req, res) => {
             console.log('✅ Created new customer:', customerId);
         }
         
-        // Create booking in Square
-        // Square will automatically send SMS/Email notifications to the customer!
+        // Step 2: Process Payment
+        console.log('💰 Processing payment...');
+        const paymentResponse = await squareClient.paymentsApi.createPayment({
+            sourceId: sourceId,
+            idempotencyKey: require('crypto').randomUUID(),
+            amountMoney: {
+                amount: BigInt(amountCents),
+                currency: 'USD'
+            },
+            customerId: customerId,
+            locationId: LOCATION_ID,
+            note: `Telehealth: ${service.name} - ${personal.firstName} ${personal.lastName}`
+        });
+        
+        console.log('✅ Payment successful:', paymentResponse.result.payment.id);
+        
+        // Step 3: Create Booking (ONLY after successful payment)
+        console.log('📝 Creating booking after successful payment...');
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
@@ -307,6 +326,7 @@ app.post('/api/booking', async (req, res) => {
         
         res.json({
             success: true,
+            paymentId: paymentResponse.result.payment.id,
             bookingId: bookingResult.result.booking.id,
             confirmation: {
                 service: service.name,
@@ -320,9 +340,9 @@ app.post('/api/booking', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Booking error:', error);
+        console.error('❌ Payment/Booking error:', error);
         res.status(500).json({ 
-            error: 'Failed to create booking',
+            error: 'Failed to process payment or create booking',
             details: error.message 
         });
     }
@@ -410,6 +430,7 @@ app.listen(PORT, () => {
 🎥 Patient Video Link: https://doxy.me/PatrickPJAwellness
 👨‍⚕️ Provider Portal: https://doxy.me/PatrickPJAwellness/provider
 📧 Notifications: Square SMS/Email (Automatic)
+💳 Payment: Processed BEFORE booking creation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
 });
