@@ -232,8 +232,7 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// ORIGINAL BOOKING CREATION ENDPOINT (KEPT FOR BACKWARDS COMPATIBILITY)
-// Note: This creates booking WITHOUT payment - use /api/process-payment for payment-first flow
+// BOOKING CREATION ENDPOINT (Original - kept for compatibility)
 app.post('/api/booking', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedTime } = req.body;
@@ -329,7 +328,7 @@ app.post('/api/booking', async (req, res) => {
     }
 });
 
-// NEW: PAYMENT PROCESSING ENDPOINT - Process payment FIRST, then create booking
+// NEW PAYMENT ENDPOINT - Process payment FIRST, then create booking (ADDED FOR FIX)
 app.post('/api/process-payment', async (req, res) => {
     try {
         const { sourceId, personal, health, consents, service, selectedTime } = req.body;
