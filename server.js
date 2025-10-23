@@ -449,7 +449,7 @@ app.post('/api/process-payment', async (req, res) => {
 // PATIENT LOGIN ENDPOINT (New)
 app.post('/api/patient-login', async (req, res) => {
     try {
-        const { accessCode, verificationType, verificationValue } = req.body;
+        const { accessCode, email } = req.body;
         
         console.log('🔐 Patient login attempt with access code:', accessCode);
         
@@ -460,52 +460,34 @@ app.post('/api/patient-login', async (req, res) => {
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 90);
         
-        const response = await squareClient.bookingsApi.listBookings(
-            undefined,
-            undefined,
-            undefined,
-            TEAM_MEMBER_ID,
-            LOCATION_ID,
-            startDate.toISOString(),
-            endDate.toISOString()
-        );
+        const response = await squareClient.bookingsApi.listBookings({
+            teamMemberId: TEAM_MEMBER_ID,
+            locationId: LOCATION_ID,
+            startAtMin: startDate.toISOString(),
+            startAtMax: endDate.toISOString()
+        });
         
         const bookings = response.result.bookings || [];
         
-        // Find booking with matching access code
+        console.log(`📋 Searching ${bookings.length} bookings for access code ${accessCode} and email ${email}`);
+        
+        // Find booking with matching access code and email
         const matchingBooking = bookings.find(booking => {
             const hasAccessCode = booking.customerNote?.includes(`ACCESS CODE: ${accessCode}`) ||
                                  booking.sellerNote?.includes(`ACCESS CODE: ${accessCode}`);
             
             if (!hasAccessCode) return false;
             
-            // Verify additional information based on verificationType
+            // Verify email matches
             const sellerNote = booking.sellerNote || '';
-            
-            switch(verificationType) {
-                case 'email':
-                    return sellerNote.includes(`EMAIL: ${verificationValue}`);
-                case 'phone':
-                    return sellerNote.includes(`PHONE: ${verificationValue}`);
-                case 'dob':
-                    return sellerNote.includes(`DOB: ${verificationValue}`);
-                case 'lastName':
-                    const nameMatch = sellerNote.match(/PATIENT: (.+)/);
-                    if (nameMatch) {
-                        const fullName = nameMatch[1].toLowerCase();
-                        return fullName.includes(verificationValue.toLowerCase());
-                    }
-                    return false;
-                default:
-                    return false;
-            }
+            return sellerNote.includes(`EMAIL: ${email}`);
         });
         
         if (!matchingBooking) {
             console.log('❌ No matching appointment found');
             return res.status(404).json({
                 success: false,
-                error: 'No appointment found with the provided information'
+                error: 'No appointment found with the provided access code and email'
             });
         }
         
