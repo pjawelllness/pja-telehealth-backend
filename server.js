@@ -9,6 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Add BigInt serialization support GLOBALLY
+BigInt.prototype.toJSON = function() { return this.toString(); };
+
 // Square Client Setup
 const squareClient = new Client({
     accessToken: process.env.SQUARE_ACCESS_TOKEN,
@@ -19,15 +22,8 @@ const squareClient = new Client({
 
 // Configuration
 const LOCATION_ID = 'LT1S9BE1EX0PW';
-const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID'; // Patrick Smith
+const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID';
 const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
-
-// Helper function to handle BigInt serialization
-function fixBigInt(obj) {
-    return JSON.parse(JSON.stringify(obj, (key, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-    ));
-}
 
 // Helper function to build comprehensive customer note
 function buildCustomerNote(personal, health, consents) {
@@ -77,7 +73,6 @@ FORM COMPLETED: ${new Date().toISOString()}
 `.trim();
 }
 
-// Helper function to build patient-facing note (for customer_note field)
 function buildPatientNote(health) {
     return `Chief Complaint: ${health.chiefComplaint}
 
@@ -88,7 +83,6 @@ Symptoms: ${health.symptoms.length > 0 ? health.symptoms.join(', ') : 'None repo
 At your appointment time, click the link above to join your video consultation.`;
 }
 
-// Helper function to build provider note (for seller_note field)
 function buildProviderNote(personal, health, consents) {
     return `PATIENT: ${personal.firstName} ${personal.lastName}
 DOB: ${personal.dob}
@@ -114,7 +108,7 @@ Patient Link: https://doxy.me/PatrickPJAwellness
 Provider Portal: https://doxy.me/PatrickPJAwellness/provider`;
 }
 
-// HEALTH CHECK ENDPOINT
+// HEALTH CHECK
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy',
@@ -122,7 +116,7 @@ app.get('/health', (req, res) => {
     });
 });
 
-// SERVICES ENDPOINT - Get all telehealth services
+// SERVICES ENDPOINT
 app.get('/api/services', async (req, res) => {
     try {
         console.log('📋 Fetching telehealth services...');
@@ -143,18 +137,17 @@ app.get('/api/services', async (req, res) => {
                 const priceAmount = variation?.itemVariationData?.priceMoney?.amount;
                 const serviceDuration = variation?.itemVariationData?.serviceDuration;
                 
-                // Convert BigInt to Number before operations
-                const priceInCents = typeof priceAmount === 'bigint' ? Number(priceAmount) : priceAmount;
-                const durationMs = typeof serviceDuration === 'bigint' ? Number(serviceDuration) : serviceDuration;
+                const priceInCents = Number(priceAmount || 0);
+                const durationMs = Number(serviceDuration || 0);
                 
                 return {
-                    id: item.id,
-                    name: item.itemData.name,
-                    description: item.itemData.description || '',
+                    id: String(item.id),
+                    name: String(item.itemData.name),
+                    description: String(item.itemData.description || ''),
                     price: (priceInCents / 100).toFixed(2),
-                    duration: Math.floor(durationMs / 60000), // Convert ms to minutes
-                    variationId: variation?.id,
-                    variationVersion: variation?.version ? String(variation.version) : '1'
+                    duration: Math.floor(durationMs / 60000),
+                    variationId: String(variation?.id || ''),
+                    variationVersion: String(variation?.version || '1')
                 };
             });
 
@@ -169,14 +162,13 @@ app.get('/api/services', async (req, res) => {
     }
 });
 
-// AVAILABILITY ENDPOINT - Get available appointment slots
+// AVAILABILITY ENDPOINT
 app.post('/api/availability', async (req, res) => {
     try {
         const { serviceVariationId, date } = req.body;
         
         console.log('📅 Checking availability for:', { serviceVariationId, date });
         
-        // Create date range for the selected day
         const startDate = new Date(date);
         startDate.setHours(0, 0, 0, 0);
         
@@ -201,27 +193,17 @@ app.post('/api/availability', async (req, res) => {
             }
         });
 
-        // Square's searchAvailability already factors in:
-        // - Provider's working hours from Square Calendar
-        // - Existing bookings
-        // - Service duration
-        // - Time blocks
-        const availabilities = (response.result.availabilities || []).map(slot => {
-            // Convert to plain string values to avoid BigInt serialization issues
-            const startAtString = String(slot.startAt);
-            return {
-                startAt: startAtString,
-                time: new Date(startAtString).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true,
-                    timeZone: 'America/New_York'
-                })
-            };
-        });
+        const availabilities = (response.result.availabilities || []).map(slot => ({
+            startAt: String(slot.startAt),
+            time: new Date(String(slot.startAt)).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/New_York'
+            })
+        }));
         
-        console.log(`✅ Returning ${availabilities.length} slots to frontend`);
-        
+        console.log(`✅ Returning ${availabilities.length} slots`);
         res.json({ availabilities });
     } catch (error) {
         console.error('❌ Availability check error:', error);
@@ -232,14 +214,13 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// BOOKING CREATION ENDPOINT (Original - kept for compatibility)
+// BOOKING ENDPOINT (Original)
 app.post('/api/booking', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedTime } = req.body;
         
         console.log('📝 Creating booking for:', personal.email);
         
-        // Search for existing customer
         let customerId = null;
         try {
             const searchResult = await squareClient.customersApi.searchCustomers({
@@ -256,7 +237,6 @@ app.post('/api/booking', async (req, res) => {
                 customerId = searchResult.result.customers[0].id;
                 console.log('✅ Found existing customer:', customerId);
                 
-                // Update customer with latest information
                 await squareClient.customersApi.updateCustomer(customerId, {
                     givenName: personal.firstName,
                     familyName: personal.lastName,
@@ -270,7 +250,6 @@ app.post('/api/booking', async (req, res) => {
             console.log('ℹ️ No existing customer found, will create new');
         }
         
-        // Create new customer if not found
         if (!customerId) {
             const customerResult = await squareClient.customersApi.createCustomer({
                 givenName: personal.firstName,
@@ -283,8 +262,6 @@ app.post('/api/booking', async (req, res) => {
             console.log('✅ Created new customer:', customerId);
         }
         
-        // Create booking in Square
-        // Square will automatically send SMS/Email notifications to the customer!
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
                 locationId: LOCATION_ID,
@@ -302,12 +279,11 @@ app.post('/api/booking', async (req, res) => {
         });
         
         console.log('✅ Booking created:', bookingResult.result.booking.id);
-        console.log('📧 Square will send confirmation email/SMS to patient automatically');
-        console.log('📧 Square will send booking notification to provider');
+        console.log('📧 Square will send confirmation email/SMS automatically');
         
         res.json({
             success: true,
-            bookingId: bookingResult.result.booking.id,
+            bookingId: String(bookingResult.result.booking.id),
             confirmation: {
                 service: service.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
@@ -328,17 +304,15 @@ app.post('/api/booking', async (req, res) => {
     }
 });
 
-// NEW PAYMENT ENDPOINT - Process payment FIRST, then create booking (ADDED FOR FIX)
+// PAYMENT PROCESSING ENDPOINT (New)
 app.post('/api/process-payment', async (req, res) => {
     try {
         const { sourceId, personal, health, consents, service, selectedTime } = req.body;
         
         console.log('💳 Processing payment for:', personal.email);
         
-        // Calculate amount in cents
         const amountCents = Math.round(parseFloat(service.price) * 100);
         
-        // Step 1: Create/Get Customer
         let customerId = null;
         try {
             const searchResult = await squareClient.customersApi.searchCustomers({
@@ -355,7 +329,6 @@ app.post('/api/process-payment', async (req, res) => {
                 customerId = searchResult.result.customers[0].id;
                 console.log('✅ Found existing customer:', customerId);
                 
-                // Update customer with latest information
                 await squareClient.customersApi.updateCustomer(customerId, {
                     givenName: personal.firstName,
                     familyName: personal.lastName,
@@ -369,7 +342,6 @@ app.post('/api/process-payment', async (req, res) => {
             console.log('ℹ️ No existing customer found, will create new');
         }
         
-        // Create new customer if not found
         if (!customerId) {
             const customerResult = await squareClient.customersApi.createCustomer({
                 givenName: personal.firstName,
@@ -382,7 +354,6 @@ app.post('/api/process-payment', async (req, res) => {
             console.log('✅ Created new customer:', customerId);
         }
         
-        // Step 2: Process Payment
         console.log('💰 Processing payment...');
         const paymentResponse = await squareClient.paymentsApi.createPayment({
             sourceId: sourceId,
@@ -398,7 +369,6 @@ app.post('/api/process-payment', async (req, res) => {
         
         console.log('✅ Payment successful:', paymentResponse.result.payment.id);
         
-        // Step 3: Create Booking (ONLY after successful payment)
         console.log('📝 Creating booking after successful payment...');
         const bookingResult = await squareClient.bookingsApi.createBooking({
             booking: {
@@ -417,13 +387,12 @@ app.post('/api/process-payment', async (req, res) => {
         });
         
         console.log('✅ Booking created:', bookingResult.result.booking.id);
-        console.log('📧 Square will send confirmation email/SMS to patient automatically');
-        console.log('📧 Square will send booking notification to provider');
+        console.log('📧 Square will send confirmation email/SMS automatically');
         
         res.json({
             success: true,
-            paymentId: paymentResponse.result.payment.id,
-            bookingId: bookingResult.result.booking.id,
+            paymentId: String(paymentResponse.result.payment.id),
+            bookingId: String(bookingResult.result.booking.id),
             confirmation: {
                 service: service.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
@@ -444,7 +413,7 @@ app.post('/api/process-payment', async (req, res) => {
     }
 });
 
-// PROVIDER LOGIN ENDPOINT
+// PROVIDER LOGIN
 app.post('/api/provider-login', (req, res) => {
     const { password } = req.body;
     
@@ -458,7 +427,7 @@ app.post('/api/provider-login', (req, res) => {
     }
 });
 
-// PROVIDER BOOKINGS ENDPOINT
+// PROVIDER BOOKINGS
 app.get('/api/provider/bookings', async (req, res) => {
     try {
         console.log('📋 Fetching provider bookings...');
@@ -468,19 +437,19 @@ app.get('/api/provider/bookings', async (req, res) => {
         endDate.setDate(endDate.getDate() + 30);
         
         const response = await squareClient.bookingsApi.listBookings(
-            undefined,              // limit
-            undefined,              // cursor
-            undefined,              // customerId (not filtering by customer)
-            TEAM_MEMBER_ID,         // teamMemberId (TMpDyughFdZTf6ID)
-            LOCATION_ID,            // locationId (LT1S9BE1EX0PW)
-            now.toISOString(),      // startAtMin
-            endDate.toISOString()   // startAtMax
+            undefined,
+            undefined,
+            undefined,
+            TEAM_MEMBER_ID,
+            LOCATION_ID,
+            now.toISOString(),
+            endDate.toISOString()
         );
         
         const bookings = (response.result.bookings || [])
             .map(booking => ({
-                id: booking.id,
-                startAt: booking.startAt,
+                id: String(booking.id),
+                startAt: String(booking.startAt),
                 customer: {
                     name: `${booking.customerNote?.split('\n')[0]?.replace('Chief Complaint: ', '') || 'Unknown'}`,
                     email: booking.sellerNote?.match(/EMAIL: (.+)/)?.[1] || '',
@@ -492,7 +461,6 @@ app.get('/api/provider/bookings', async (req, res) => {
             .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
         
         console.log(`✅ Found ${bookings.length} bookings`);
-        
         res.json({ bookings });
     } catch (error) {
         console.error('❌ Error fetching bookings:', error);
@@ -503,12 +471,12 @@ app.get('/api/provider/bookings', async (req, res) => {
     }
 });
 
-// Serve index.html for root route
+// Serve index.html for root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Catch-all route to serve frontend
+// Catch-all - MUST be last!
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
