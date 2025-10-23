@@ -232,6 +232,103 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
+// ORIGINAL BOOKING CREATION ENDPOINT (KEPT FOR BACKWARDS COMPATIBILITY)
+// Note: This creates booking WITHOUT payment - use /api/process-payment for payment-first flow
+app.post('/api/booking', async (req, res) => {
+    try {
+        const { personal, health, consents, service, selectedTime } = req.body;
+        
+        console.log('📝 Creating booking for:', personal.email);
+        
+        // Search for existing customer
+        let customerId = null;
+        try {
+            const searchResult = await squareClient.customersApi.searchCustomers({
+                query: {
+                    filter: {
+                        emailAddress: {
+                            exact: personal.email
+                        }
+                    }
+                }
+            });
+            
+            if (searchResult.result.customers && searchResult.result.customers.length > 0) {
+                customerId = searchResult.result.customers[0].id;
+                console.log('✅ Found existing customer:', customerId);
+                
+                // Update customer with latest information
+                await squareClient.customersApi.updateCustomer(customerId, {
+                    givenName: personal.firstName,
+                    familyName: personal.lastName,
+                    emailAddress: personal.email,
+                    phoneNumber: personal.phone,
+                    note: buildCustomerNote(personal, health, consents)
+                });
+                console.log('✅ Updated customer information');
+            }
+        } catch (searchError) {
+            console.log('ℹ️ No existing customer found, will create new');
+        }
+        
+        // Create new customer if not found
+        if (!customerId) {
+            const customerResult = await squareClient.customersApi.createCustomer({
+                givenName: personal.firstName,
+                familyName: personal.lastName,
+                emailAddress: personal.email,
+                phoneNumber: personal.phone,
+                note: buildCustomerNote(personal, health, consents)
+            });
+            customerId = customerResult.result.customer.id;
+            console.log('✅ Created new customer:', customerId);
+        }
+        
+        // Create booking in Square
+        // Square will automatically send SMS/Email notifications to the customer!
+        const bookingResult = await squareClient.bookingsApi.createBooking({
+            booking: {
+                locationId: LOCATION_ID,
+                customerId: customerId,
+                startAt: selectedTime.startAt,
+                appointmentSegments: [{
+                    durationMinutes: service.duration,
+                    serviceVariationId: service.variationId,
+                    teamMemberId: TEAM_MEMBER_ID,
+                    serviceVariationVersion: BigInt(Date.now())
+                }],
+                customerNote: buildPatientNote(health),
+                sellerNote: buildProviderNote(personal, health, consents)
+            }
+        });
+        
+        console.log('✅ Booking created:', bookingResult.result.booking.id);
+        console.log('📧 Square will send confirmation email/SMS to patient automatically');
+        console.log('📧 Square will send booking notification to provider');
+        
+        res.json({
+            success: true,
+            bookingId: bookingResult.result.booking.id,
+            confirmation: {
+                service: service.name,
+                date: new Date(selectedTime.startAt).toLocaleDateString(),
+                time: selectedTime.time,
+                duration: `${service.duration} minutes`,
+                price: `$${service.price}`,
+                videoLink: 'https://doxy.me/PatrickPJAwellness',
+                message: 'Check your email/SMS for your appointment confirmation with video link!'
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Booking error:', error);
+        res.status(500).json({ 
+            error: 'Failed to create booking',
+            details: error.message 
+        });
+    }
+});
+
 // NEW: PAYMENT PROCESSING ENDPOINT - Process payment FIRST, then create booking
 app.post('/api/process-payment', async (req, res) => {
     try {
