@@ -521,32 +521,6 @@
             font-family: 'Courier New', monospace;
         }
 
-        .verification-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .verification-option {
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .verification-option:hover {
-            border-color: #667eea;
-            background: #f5f7ff;
-        }
-
-        .verification-option.selected {
-            border-color: #667eea;
-            background: #f5f7ff;
-        }
-
         .appointment-detail-box {
             background: #f5f7ff;
             padding: 25px;
@@ -922,7 +896,7 @@
 
             <div id="patientLogin">
                 <p style="color: #666; margin-bottom: 25px;">
-                    Enter your 6-digit access code and verification information to view your appointment details.
+                    Enter your 6-digit access code and email address to view your appointment details.
                 </p>
 
                 <div class="form-group">
@@ -932,26 +906,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Verify With *</label>
-                    <div class="verification-options">
-                        <div class="verification-option" onclick="selectVerification('email')">
-                            <strong>📧 Email</strong>
-                        </div>
-                        <div class="verification-option" onclick="selectVerification('phone')">
-                            <strong>📱 Phone</strong>
-                        </div>
-                        <div class="verification-option" onclick="selectVerification('dob')">
-                            <strong>🎂 Date of Birth</strong>
-                        </div>
-                        <div class="verification-option" onclick="selectVerification('lastName')">
-                            <strong>👤 Last Name</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group" id="verificationInput" style="display: none;">
-                    <label id="verificationLabel"></label>
-                    <input type="text" id="verificationValue">
+                    <label for="patientEmail">Email Address *</label>
+                    <input type="email" id="patientEmail" placeholder="your@email.com">
                 </div>
 
                 <div class="error-message" id="patientLoginError"></div>
@@ -1010,7 +966,6 @@
         let availableServices = [];
         let payments;
         let card;
-        let selectedVerificationType = null;
 
         // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
@@ -1265,7 +1220,7 @@
                         <h3 style="margin-bottom: 10px;">🔐 Your Access Code</h3>
                         <p style="margin-bottom: 10px;">Save this code to view your appointment anytime:</p>
                         <div class="access-code-display">${accessCode}</div>
-                        <p style="font-size: 14px; opacity: 0.9;">Click "View My Appointment" button and use this code with your identifying information to view appointment details.</p>
+                        <p style="font-size: 14px; opacity: 0.9;">Click "View My Appointment" button and use this code with your email address to view appointment details.</p>
                     </div>
                     
                     <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin: 30px 0; text-align: left;">
@@ -1419,53 +1374,12 @@
             document.getElementById('patientLogin').style.display = 'block';
             document.getElementById('patientAppointment').style.display = 'none';
             document.getElementById('patientAccessCode').value = '';
-            document.getElementById('verificationValue').value = '';
-            document.getElementById('verificationInput').style.display = 'none';
-            selectedVerificationType = null;
-            document.querySelectorAll('.verification-option').forEach(opt => opt.classList.remove('selected'));
-        }
-
-        function selectVerification(type) {
-            selectedVerificationType = type;
-            
-            document.querySelectorAll('.verification-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            event.target.closest('.verification-option').classList.add('selected');
-            
-            const inputDiv = document.getElementById('verificationInput');
-            const label = document.getElementById('verificationLabel');
-            const input = document.getElementById('verificationValue');
-            
-            inputDiv.style.display = 'block';
-            
-            switch(type) {
-                case 'email':
-                    label.textContent = 'Email Address *';
-                    input.type = 'email';
-                    input.placeholder = 'your@email.com';
-                    break;
-                case 'phone':
-                    label.textContent = 'Phone Number *';
-                    input.type = 'tel';
-                    input.placeholder = '(555) 555-5555';
-                    break;
-                case 'dob':
-                    label.textContent = 'Date of Birth *';
-                    input.type = 'date';
-                    input.placeholder = '';
-                    break;
-                case 'lastName':
-                    label.textContent = 'Last Name *';
-                    input.type = 'text';
-                    input.placeholder = 'Smith';
-                    break;
-            }
+            document.getElementById('patientEmail').value = '';
         }
 
         async function loginPatient() {
             const accessCode = document.getElementById('patientAccessCode').value;
-            const verificationValue = document.getElementById('verificationValue').value;
+            const email = document.getElementById('patientEmail').value;
             const errorDiv = document.getElementById('patientLoginError');
 
             if (!accessCode || accessCode.length !== 6) {
@@ -1474,14 +1388,8 @@
                 return;
             }
 
-            if (!selectedVerificationType) {
-                errorDiv.textContent = 'Please select a verification method';
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            if (!verificationValue) {
-                errorDiv.textContent = 'Please enter your verification information';
+            if (!email) {
+                errorDiv.textContent = 'Please enter your email address';
                 errorDiv.style.display = 'block';
                 return;
             }
@@ -1492,8 +1400,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         accessCode: accessCode,
-                        verificationType: selectedVerificationType,
-                        verificationValue: verificationValue
+                        email: email
                     })
                 });
 
@@ -1504,7 +1411,7 @@
                     document.getElementById('patientAppointment').style.display = 'block';
                     displayAppointment(result.appointment);
                 } else {
-                    errorDiv.textContent = result.error || 'Invalid access code or verification information';
+                    errorDiv.textContent = result.error || 'Invalid access code or email address';
                     errorDiv.style.display = 'block';
                 }
             } catch (error) {
