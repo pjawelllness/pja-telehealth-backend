@@ -213,48 +213,29 @@
             line-height: 1.6;
         }
 
-        .time-slot-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .time-slot {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        .time-slot:hover {
-            border-color: #667eea;
-            background: #f5f7ff;
-        }
-
-        .time-slot.selected {
-            background: #667eea;
+        .hsa-badge {
+            display: inline-block;
+            background: #4CAF50;
             color: white;
-            border-color: #667eea;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #333;
         }
 
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -263,46 +244,31 @@
             transition: border-color 0.3s;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        .form-group textarea {
-            resize: vertical;
+        textarea {
             min-height: 100px;
+            resize: vertical;
         }
 
         .checkbox-group {
             display: flex;
+            gap: 15px;
             flex-wrap: wrap;
-            gap: 10px;
         }
 
-        .checkbox-label {
+        .checkbox-item {
             display: flex;
             align-items: center;
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
+            gap: 8px;
         }
 
-        .checkbox-label:hover {
-            border-color: #667eea;
-            background: #f5f7ff;
-        }
-
-        .checkbox-label input:checked + span {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .checkbox-label input {
-            margin-right: 8px;
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
         }
 
         .consent-box {
@@ -319,36 +285,13 @@
         }
 
         .consent-box p {
-            color: #666;
             line-height: 1.6;
+            color: #666;
             margin-bottom: 15px;
         }
 
-        .consent-checkbox {
-            display: flex;
-            align-items: flex-start;
-            margin-top: 15px;
-        }
-
-        .consent-checkbox input {
-            margin-right: 10px;
-            margin-top: 4px;
-        }
-
-        .consent-checkbox label {
-            font-size: 14px;
-            color: #333;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
         .btn {
-            flex: 1;
-            padding: 15px;
+            padding: 15px 30px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -368,161 +311,129 @@
             box-shadow: 0 5px 15px rgba(102,126,234,0.3);
         }
 
-        .btn-primary:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         .btn-secondary {
             background: #e0e0e0;
             color: #666;
+            margin-right: 10px;
         }
 
         .btn-secondary:hover {
             background: #d0d0d0;
         }
 
-        .summary-box {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .summary-item {
+        .button-group {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e0e0e0;
+            margin-top: 30px;
         }
 
-        .summary-item:last-child {
-            border-bottom: none;
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
         }
 
-        .summary-label {
-            font-weight: 600;
-            color: #666;
+        .time-slot {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .summary-value {
-            color: #333;
+        .time-slot:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .time-slot.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
         }
 
         .loading {
+            display: none;
             text-align: center;
             padding: 40px;
-            color: #666;
         }
 
-        .error {
-            background: #ffebee;
-            color: #c62828;
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            border: 2px solid #f44336;
+            color: #c00;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            display: none;
         }
 
-        .success {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .success-icon {
-            font-size: 80px;
-            color: #4CAF50;
-            margin-bottom: 20px;
-        }
-
-        .modal {
+        .provider-modal, .patient-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .modal.active {
-            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+        }
+
+        .provider-modal.active, .patient-modal.active {
+            display: flex;
         }
 
         .modal-content {
             background: white;
             border-radius: 20px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
             overflow-y: auto;
-            position: relative;
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 20px 20px 0 0;
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.2);
-            border: 2px solid white;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 24px;
-            transition: all 0.3s;
-        }
-
-        .modal-close:hover {
-            background: white;
-            color: #667eea;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .provider-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
             margin-bottom: 30px;
         }
 
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            opacity: 0.9;
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            color: #666;
         }
 
         .booking-card {
@@ -530,75 +441,118 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .booking-card h4 {
-            color: #333;
-            margin-bottom: 15px;
         }
 
         .booking-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+            margin: 15px 0;
         }
 
         .booking-info-item {
-            display: flex;
-            flex-direction: column;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
         }
 
         .booking-info-label {
             font-size: 12px;
             color: #666;
             margin-bottom: 5px;
-            font-weight: 600;
         }
 
         .booking-info-value {
+            font-weight: 600;
             color: #333;
         }
 
-        #card-container {
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f5f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .payment-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payment-warning h3 {
+            margin-bottom: 10px;
+        }
+
+        .access-code-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .access-code-display {
+            font-size: 3em;
+            font-weight: bold;
+            letter-spacing: 8px;
             margin: 20px 0;
+            font-family: 'Courier New', monospace;
         }
 
         .appointment-detail-box {
             background: #f5f7ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .appointment-detail-box p {
-            margin-bottom: 10px;
-            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
         }
 
         .video-link-box {
             background: #e8f5e9;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
             text-align: center;
-            margin-bottom: 20px;
         }
 
         .video-link-btn {
             display: inline-block;
-            background: #2e7d32;
+            background: #4CAF50;
             color: white;
             padding: 15px 30px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
+            margin: 10px 0;
             transition: all 0.3s;
         }
 
         .video-link-btn:hover {
-            background: #1b5e20;
+            background: #45a049;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46,125,50,0.3);
+            box-shadow: 0 5px 15px rgba(76,175,80,0.3);
         }
 
         /* MOBILE RESPONSIVE FIX */
@@ -655,22 +609,6 @@
             .step-label {
                 font-size: 10px;
             }
-
-            .time-slot-container {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .provider-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .booking-info {
-                grid-template-columns: 1fr;
-            }
         }
 
         @media (max-width: 480px) {
@@ -681,20 +619,11 @@
             .header h1 {
                 font-size: 1.5em;
             }
-
-            .service-title {
-                font-size: 1.2em;
-            }
-
-            .service-price {
-                font-size: 1.6em;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <div class="header-buttons">
                 <button class="patient-portal-btn" onclick="showPatientPortal()">View My Appointment</button>
@@ -709,647 +638,796 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="content">
+            <div class="error-message" id="errorMessage"></div>
+
             <!-- Step Indicator -->
             <div class="step-indicator">
-                <div class="step active" data-step="1">
+                <div class="step active" id="step1">
                     <div class="step-circle">1</div>
                     <div class="step-label">Service</div>
                 </div>
-                <div class="step" data-step="2">
+                <div class="step" id="step2">
                     <div class="step-circle">2</div>
                     <div class="step-label">Personal</div>
                 </div>
-                <div class="step" data-step="3">
+                <div class="step" id="step3">
                     <div class="step-circle">3</div>
                     <div class="step-label">Health</div>
                 </div>
-                <div class="step" data-step="4">
+                <div class="step" id="step4">
                     <div class="step-circle">4</div>
                     <div class="step-label">Consent</div>
                 </div>
-                <div class="step" data-step="5">
+                <div class="step" id="step5">
                     <div class="step-circle">5</div>
                     <div class="step-label">Schedule</div>
                 </div>
-                <div class="step" data-step="6">
+                <div class="step" id="step6">
                     <div class="step-circle">6</div>
                     <div class="step-label">Payment</div>
                 </div>
             </div>
 
             <!-- Step 1: Service Selection -->
-            <div class="form-section active" id="step1">
+            <div class="form-section active" id="section1">
                 <h2>Select Your Service</h2>
-                <div id="servicesContainer" class="loading">Loading services...</div>
+                <div class="loading active" id="servicesLoading">
+                    <div class="spinner"></div>
+                    <p>Loading available services...</p>
+                </div>
+                <div id="servicesList"></div>
                 <div class="button-group">
-                    <button class="btn btn-primary" onclick="nextStep(2)" id="step1Next" disabled>Continue</button>
+                    <div></div>
+                    <button class="btn btn-primary" onclick="nextStep(2)">Next: Personal Information</button>
                 </div>
             </div>
 
             <!-- Step 2: Personal Information -->
-            <div class="form-section" id="step2">
+            <div class="form-section" id="section2">
                 <h2>Personal Information</h2>
                 <div class="form-group">
-                    <label>First Name *</label>
+                    <label for="firstName">First Name *</label>
                     <input type="text" id="firstName" required>
                 </div>
                 <div class="form-group">
-                    <label>Last Name *</label>
+                    <label for="lastName">Last Name *</label>
                     <input type="text" id="lastName" required>
                 </div>
                 <div class="form-group">
-                    <label>Email Address *</label>
+                    <label for="email">Email Address *</label>
                     <input type="email" id="email" required>
                 </div>
                 <div class="form-group">
-                    <label>Phone Number *</label>
+                    <label for="phone">Phone Number *</label>
                     <input type="tel" id="phone" required>
                 </div>
                 <div class="form-group">
-                    <label>Date of Birth *</label>
+                    <label for="dob">Date of Birth *</label>
                     <input type="date" id="dob" required>
                 </div>
                 <div class="form-group">
-                    <label>Emergency Contact Name</label>
+                    <label for="emergencyName">Emergency Contact Name</label>
                     <input type="text" id="emergencyName">
                 </div>
                 <div class="form-group">
-                    <label>Emergency Contact Phone</label>
+                    <label for="emergencyPhone">Emergency Contact Phone</label>
                     <input type="tel" id="emergencyPhone">
                 </div>
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="previousStep(1)">Back</button>
-                    <button class="btn btn-primary" onclick="nextStep(3)">Continue</button>
+                    <button class="btn btn-primary" onclick="nextStep(3)">Next: Health Information</button>
                 </div>
             </div>
 
             <!-- Step 3: Health Information -->
-            <div class="form-section" id="step3">
-                <h2>Health Information</h2>
+            <div class="form-section" id="section3">
+                <h2 style="margin-bottom: 30px;">Health Information</h2>
                 <div class="form-group">
-                    <label>What is your main reason for today's visit? (Chief Complaint) *</label>
-                    <textarea id="chiefComplaint" required></textarea>
+                    <label>Chief Complaint (What brings you here today?) <span style="color: red;">*</span></label>
+                    <textarea id="chiefComplaint" required placeholder="Please describe your main concern or reason for this consultation..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>How long have you been experiencing these symptoms? *</label>
+                    <label>How long have you been experiencing these symptoms? <span style="color: red;">*</span></label>
                     <select id="symptomDuration" required>
                         <option value="">Select duration...</option>
-                        <option value="Less than 24 hours">Less than 24 hours</option>
-                        <option value="1-3 days">1-3 days</option>
-                        <option value="4-7 days">4-7 days</option>
-                        <option value="1-2 weeks">1-2 weeks</option>
-                        <option value="2-4 weeks">2-4 weeks</option>
-                        <option value="More than 1 month">More than 1 month</option>
+                        <option value="less-than-1-week">Less than 1 week</option>
+                        <option value="1-2-weeks">1-2 weeks</option>
+                        <option value="2-4-weeks">2-4 weeks</option>
+                        <option value="1-3-months">1-3 months</option>
+                        <option value="more-than-3-months">More than 3 months</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Select all current symptoms:</label>
+                    <label>Current Symptoms (Check all that apply)</label>
                     <div class="checkbox-group">
-                        <label class="checkbox-label"><input type="checkbox" value="Fever"><span>Fever</span></label>
-                        <label class="checkbox-label"><input type="checkbox" value="Cough"><span>Cough</span></label>
-                        <label class="checkbox-label"><input type="checkbox" value="Fatigue"><span>Fatigue</span></label>
-                        <label class="checkbox-label"><input type="checkbox" value="Headache"><span>Headache</span></label>
-                        <label class="checkbox-label"><input type="checkbox" value="Nausea"><span>Nausea</span></label>
-                        <label class="checkbox-label"><input type="checkbox" value="Pain"><span>Pain</span></label>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Fatigue" id="symptom1">
+                            <label for="symptom1">Fatigue</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Pain" id="symptom2">
+                            <label for="symptom2">Pain</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Anxiety" id="symptom3">
+                            <label for="symptom3">Anxiety</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Depression" id="symptom4">
+                            <label for="symptom4">Depression</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Sleep Issues" id="symptom5">
+                            <label for="symptom5">Sleep Issues</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Digestive Issues" id="symptom6">
+                            <label for="symptom6">Digestive Issues</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Headaches" id="symptom7">
+                            <label for="symptom7">Headaches</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="symptoms" value="Stress" id="symptom8">
+                            <label for="symptom8">Stress</label>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Current Medications (including supplements)</label>
-                    <textarea id="medications" placeholder="List all medications and dosages..."></textarea>
+                    <label>Current Medications</label>
+                    <textarea id="medications" placeholder="List all medications, supplements, and vitamins you're currently taking..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Known Allergies (medications, food, environmental)</label>
-                    <textarea id="allergies" placeholder="List all known allergies..."></textarea>
+                    <label>Allergies</label>
+                    <textarea id="allergies" placeholder="List any known allergies (medications, foods, environmental, etc.)..."></textarea>
                 </div>
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="previousStep(2)">Back</button>
-                    <button class="btn btn-primary" onclick="nextStep(4)">Continue</button>
+                    <button class="btn btn-primary" onclick="nextStep(4)">Next: Consent Forms</button>
                 </div>
             </div>
 
-            <!-- Step 4: Consents -->
-            <div class="form-section" id="step4">
-                <h2>Informed Consent</h2>
+            <!-- Step 4: Consent Forms -->
+            <div class="form-section" id="section4">
+                <h2 style="margin-bottom: 30px;">Consent & Agreements</h2>
                 
                 <!-- HIPAA Privacy Notice -->
                 <div class="consent-box">
-                    <h3>HIPAA Privacy Notice</h3>
-                    <p>PJA Wellness Management LLC is committed to protecting your health information. This notice describes how medical information about you may be used and disclosed and how you can access this information.</p>
-                    <p><strong>Your Rights:</strong> You have the right to request restrictions on certain uses and disclosures of your health information, to receive confidential communications, to inspect and copy your health information, to amend your health information, and to receive an accounting of disclosures.</p>
-                    <p><strong>Our Responsibilities:</strong> We are required by law to maintain the privacy of your health information, provide you with this notice, and abide by the terms currently in effect. We will not use or disclose your health information without your authorization, except as described in this notice.</p>
-                    <p><strong>Uses and Disclosures:</strong> We may use and disclose your health information for treatment, payment, and healthcare operations. For example, we may share your information with other healthcare providers treating you, with insurance companies for billing purposes, or for quality improvement activities.</p>
-                    <div class="consent-checkbox">
-                        <input type="checkbox" id="hipaaConsent" required>
-                        <label for="hipaaConsent">I acknowledge that I have received and reviewed the HIPAA Privacy Notice and understand my rights and PJA Wellness's responsibilities regarding my protected health information. *</label>
-                    </div>
+                    <h3>🔒 HIPAA Privacy Notice</h3>
+                    <p><strong>Effective Date:</strong> October 19, 2025</p>
+                    
+                    <h4>How We Use Your Health Information</h4>
+                    <p>Your health information may be used and disclosed for:</p>
+                    <ul>
+                        <li><strong>Treatment:</strong> Providing, coordinating, or managing your healthcare</li>
+                        <li><strong>Payment:</strong> Processing payments for services provided</li>
+                        <li><strong>Healthcare Operations:</strong> Quality improvement and training</li>
+                    </ul>
+
+                    <h4>Your Rights</h4>
+                    <ul>
+                        <li>Access and review your medical records</li>
+                        <li>Request amendments to your records</li>
+                        <li>Request restrictions on how we use your information</li>
+                        <li>Receive confidential communications</li>
+                        <li>File a complaint if you believe your privacy rights have been violated</li>
+                    </ul>
+
+                    <h4>Our Responsibilities</h4>
+                    <ul>
+                        <li>Maintain the privacy and security of your health information</li>
+                        <li>Provide you with this notice of our privacy practices</li>
+                        <li>Follow the terms of this notice</li>
+                        <li>Notify you of any breaches of your protected health information</li>
+                    </ul>
+
+                    <h4>Secure Platform</h4>
+                    <p>All health information is stored in Square's HIPAA-compliant system. Video consultations are conducted through Doxy.me, a HIPAA-compliant telemedicine platform with a signed Business Associate Agreement.</p>
                 </div>
 
-                <!-- Telehealth Informed Consent -->
-                <div class="consent-box">
-                    <h3>Telehealth Informed Consent</h3>
-                    <p><strong>Nature of Telehealth Services:</strong> Telehealth involves the use of electronic communications to enable health care providers at different locations to share individual patient medical information for the purpose of improving patient care. This may include live two-way audio and video, recorded health information, or other electronic means.</p>
-                    <p><strong>Benefits:</strong> Improved access to care by enabling you to remain at home or at a remote location, more efficient medical evaluation and management, and reduced travel time and costs.</p>
-                    <p><strong>Potential Risks:</strong> While telehealth has been shown to be effective, there are potential risks including but not limited to: delays in medical evaluation and treatment could occur due to technical difficulties, security protocols could fail causing a breach of privacy, or lack of access to complete medical records may result in adverse drug interactions or allergic reactions.</p>
-                    <p><strong>Privacy and Security:</strong> We use Doxy.me, a HIPAA-compliant video platform, to conduct secure video consultations. Your session is encrypted and protected. However, no data transmission over the internet is 100% secure.</p>
-                    <p><strong>Your Responsibilities:</strong> You are responsible for providing accurate health information, being in a private location for your consultation, having a reliable internet connection, and following up with in-person care if recommended.</p>
-                    <p><strong>Right to Refuse:</strong> You have the right to withhold or withdraw consent to the use of telehealth at any time. This will not affect your right to future care or treatment.</p>
-                    <div class="consent-checkbox">
-                        <input type="checkbox" id="telehealthConsent" required>
-                        <label for="telehealthConsent">I consent to receiving healthcare services via telehealth. I understand the potential risks and benefits, and I have had the opportunity to ask questions. I understand that I may withdraw this consent at any time. *</label>
-                    </div>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <input type="checkbox" id="consentHipaa" required style="width: auto; margin-right: 10px;">
+                    <label for="consentHipaa" style="display: inline;">
+                        <strong>I acknowledge that I have read and understand the HIPAA Privacy Notice above.</strong>
+                        <span style="color: red;">*</span>
+                    </label>
                 </div>
 
-                <!-- Recording Consent -->
+                <!-- Telehealth Consent -->
                 <div class="consent-box">
-                    <h3>Session Recording (Optional)</h3>
-                    <p>For quality assurance and training purposes, we may record telehealth sessions. You may decline this without affecting your care.</p>
-                    <div class="consent-checkbox">
-                        <input type="checkbox" id="recordingConsent">
-                        <label for="recordingConsent">I consent to recording of my telehealth session for quality assurance and training purposes.</label>
-                    </div>
+                    <h3>💻 Telehealth Informed Consent</h3>
+                    
+                    <h4>What is Telehealth?</h4>
+                    <p>Telehealth uses secure video conferencing to provide healthcare services remotely.</p>
+
+                    <h4>Benefits</h4>
+                    <ul>
+                        <li>Access care from the comfort of your home</li>
+                        <li>Reduced travel time and costs</li>
+                        <li>Convenient scheduling</li>
+                        <li>Continuity of care</li>
+                    </ul>
+
+                    <h4>Limitations & Risks</h4>
+                    <ul>
+                        <li><strong>Technical Issues:</strong> Internet connectivity may affect call quality</li>
+                        <li><strong>Clinical Limitations:</strong> Physical examination is limited compared to in-person visits</li>
+                        <li><strong>Emergencies:</strong> Telehealth is NOT appropriate for medical emergencies. Call 911 for emergencies.</li>
+                    </ul>
+
+                    <h4>Your Responsibilities</h4>
+                    <ul>
+                        <li>Ensure reliable internet connection and compatible device</li>
+                        <li>Participate from a private, quiet location</li>
+                        <li>Be prepared to verify your identity</li>
+                        <li>Understand that in-person care may be needed for certain conditions</li>
+                    </ul>
+
+                    <h4>Platform Security</h4>
+                    <p>We use Doxy.me, a HIPAA-compliant video platform, for all consultations. No software download is required.</p>
+
+                    <h4>Payment & Fees</h4>
+                    <p>Payment is required at time of booking. We accept HSA/FSA cards and major credit cards. Services are self-pay only.</p>
+                </div>
+
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <input type="checkbox" id="consentTelehealth" required style="width: auto; margin-right: 10px;">
+                    <label for="consentTelehealth" style="display: inline;">
+                        <strong>I consent to receive healthcare services via telehealth and understand the benefits and limitations described above.</strong>
+                        <span style="color: red;">*</span>
+                    </label>
+                </div>
+
+                <!-- Session Recording -->
+                <div style="background: #fff8dc; border-left: 4px solid #ffa500; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h4 style="margin-top: 0;">📹 Session Recording Policy</h4>
+                    <p>Your telehealth session may be recorded for quality assurance, training, and medical record purposes. Recordings are stored securely and treated as part of your medical record.</p>
+                </div>
+
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <input type="checkbox" id="consentRecording" style="width: auto; margin-right: 10px;">
+                    <label for="consentRecording" style="display: inline;">
+                        <strong>I consent to the recording of my telehealth session.</strong>
+                    </label>
                 </div>
 
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="previousStep(3)">Back</button>
-                    <button class="btn btn-primary" onclick="nextStep(5)">Continue</button>
+                    <button class="btn btn-primary" onclick="nextStep(5)">Next: Schedule Appointment</button>
                 </div>
             </div>
 
-            <!-- Step 5: Schedule -->
-            <div class="form-section" id="step5">
-                <h2>Schedule Your Appointment</h2>
+            <!-- Step 5: Schedule Appointment -->
+            <div class="form-section" id="section5">
+                <h2>Select Date & Time</h2>
                 <div class="form-group">
-                    <label>Select Date *</label>
-                    <input type="date" id="appointmentDate" min="">
+                    <label for="appointmentDate">Select Date *</label>
+                    <input type="date" id="appointmentDate" onchange="loadAvailability()">
                 </div>
-                <div id="timeSlotsContainer"></div>
+                <div class="loading" id="availabilityLoading">
+                    <div class="spinner"></div>
+                    <p>Loading available times...</p>
+                </div>
+                <div id="availabilityGrid"></div>
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="previousStep(4)">Back</button>
-                    <button class="btn btn-primary" onclick="nextStep(6)" id="step5Next" disabled>Continue to Payment</button>
+                    <button class="btn btn-primary" onclick="nextStep(6)">Next: Payment</button>
                 </div>
             </div>
 
-            <!-- Step 6: Payment & Summary -->
-            <div class="form-section" id="step6">
-                <h2>Review & Payment</h2>
-                <div id="summaryContainer"></div>
-                <div id="card-container"></div>
+            <!-- Step 6: Payment -->
+            <div class="form-section" id="section6">
+                <h2>💳 Complete Payment</h2>
+                
+                <div class="payment-warning">
+                    <h3>🔒 Secure Payment Required</h3>
+                    <p>Complete your payment below to confirm your appointment. Your card information is processed securely by Square.</p>
+                </div>
+
+                <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 20px;">Appointment Summary</h3>
+                    <div id="appointmentSummary"></div>
+                </div>
+
+                <!-- Square Payment Form Container -->
+                <div style="background: white; padding: 30px; border-radius: 15px; border: 2px solid #e0e0e0; margin: 30px 0;">
+                    <h3 style="margin-bottom: 20px;">💳 Payment Information</h3>
+                    <div id="card-container" style="margin-bottom: 20px;"></div>
+                    <div id="payment-status-container"></div>
+                </div>
+
+                <div class="loading" id="paymentLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Processing your payment and booking...</p>
+                </div>
+
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="previousStep(5)">Back</button>
-                    <button class="btn btn-primary" onclick="processPayment()" id="payButton">Complete Booking</button>
-                </div>
-            </div>
-
-            <!-- Success -->
-            <div class="form-section" id="success">
-                <div class="success">
-                    <div class="success-icon">✓</div>
-                    <h2>Booking Confirmed!</h2>
-                    <div id="confirmationDetails"></div>
+                    <button class="btn btn-primary" id="card-button" style="display: none;">
+                        Complete Payment & Book Appointment ($<span id="payment-amount">0</span>)
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Patient Portal Modal -->
-    <div class="modal" id="patientModal">
+    <div class="patient-modal" id="patientModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Patient Portal</h2>
-                <button class="modal-close" onclick="closePatientPortal()">×</button>
+                <h2>View My Appointment</h2>
+                <button class="close-btn" onclick="closePatientPortal()">&times;</button>
             </div>
-            <div class="modal-body">
-                <!-- Login Form -->
-                <div id="patientLogin">
-                    <p style="margin-bottom: 20px;">Enter your 6-digit access code and email to view your appointment details.</p>
-                    <div class="form-group">
-                        <label>Access Code</label>
-                        <input type="text" id="patientAccessCode" maxlength="6" placeholder="6-digit code">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="patientEmail" placeholder="your@email.com">
-                    </div>
-                    <div id="patientLoginError" class="error" style="display: none;"></div>
-                    <button class="btn btn-primary" onclick="loginPatient()" style="width: 100%;">View Appointment</button>
+
+            <div id="patientLogin">
+                <p style="color: #666; margin-bottom: 25px;">
+                    Enter your 6-digit access code and email address to view your appointment details.
+                </p>
+
+                <div class="form-group">
+                    <label for="patientAccessCode">6-Digit Access Code *</label>
+                    <input type="text" id="patientAccessCode" maxlength="6" placeholder="000000" 
+                           style="text-align: center; font-size: 24px; letter-spacing: 8px; font-family: 'Courier New', monospace;">
                 </div>
-                <!-- Appointment Display -->
-                <div id="patientAppointment" style="display: none;">
-                    <div id="appointmentDetails"></div>
+
+                <div class="form-group">
+                    <label for="patientEmail">Email Address *</label>
+                    <input type="email" id="patientEmail" placeholder="your@email.com">
                 </div>
+
+                <div class="error-message" id="patientLoginError"></div>
+                <button class="btn btn-primary" onclick="loginPatient()" style="width: 100%;">View My Appointment</button>
+            </div>
+
+            <div id="patientAppointment" style="display: none;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+                    <h3 style="color: #4CAF50;">Your Appointment</h3>
+                </div>
+
+                <div id="appointmentDetails"></div>
             </div>
         </div>
     </div>
 
     <!-- Provider Portal Modal -->
-    <div class="modal" id="providerModal">
+    <div class="provider-modal" id="providerModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Provider Portal</h2>
-                <button class="modal-close" onclick="closeProviderPortal()">×</button>
+                <button class="close-btn" onclick="closeProviderPortal()">&times;</button>
             </div>
-            <div class="modal-body">
-                <!-- Login -->
-                <div id="providerLogin">
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="providerPassword">
-                    </div>
-                    <div id="loginError" class="error" style="display: none;"></div>
-                    <button class="btn btn-primary" onclick="loginProvider()" style="width: 100%;">Login</button>
+
+            <div id="providerLogin">
+                <div class="form-group">
+                    <label for="providerPassword">Password</label>
+                    <input type="password" id="providerPassword" onkeypress="if(event.key==='Enter') loginProvider()">
                 </div>
-                <!-- Dashboard -->
-                <div id="providerDashboard" style="display: none;">
-                    <div class="provider-stats">
-                        <div class="stat-card">
-                            <div class="stat-number" id="todayCount">0</div>
-                            <div class="stat-label">Today's Appointments</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="weekCount">0</div>
-                            <div class="stat-label">This Week</div>
-                        </div>
+                <div class="error-message" id="loginError"></div>
+                <button class="btn btn-primary" onclick="loginProvider()">Login</button>
+            </div>
+
+            <div id="providerDashboard" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="todayCount">0</div>
+                        <div class="stat-label">Today's Appointments</div>
                     </div>
-                    <h3 style="margin-bottom: 20px;">Upcoming Appointments</h3>
-                    <div id="bookingsList"></div>
-                    <p style="text-align: center; margin-top: 20px;">
-                        <a href="https://doxy.me/PatrickPJAwellness/provider" target="_blank" class="video-link-btn">Open Provider Video Portal</a>
-                    </p>
+                    <div class="stat-card">
+                        <div class="stat-number" id="weekCount">0</div>
+                        <div class="stat-label">This Week</div>
+                    </div>
                 </div>
+                <h3 style="margin-bottom: 20px;">Upcoming Appointments</h3>
+                <div id="bookingsList"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Global State
         let currentStep = 1;
-        let bookingData = {
-            service: null,
-            personal: {},
-            health: {},
-            consents: {},
-            schedule: {}
-        };
-        let squarePayments;
+        let selectedService = null;
+        let selectedTime = null;
+        let availableServices = [];
+        let payments;
         let card;
-        let squareConfig = {};
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Set minimum date to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('appointmentDate').min = today;
-            
-            // Load Square config
-            try {
-                const response = await fetch('/api/square-config');
-                squareConfig = await response.json();
-                console.log('Square config loaded:', squareConfig);
-            } catch (error) {
-                console.error('Failed to load Square config:', error);
-            }
-            
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
             loadServices();
+            setMinDate();
         });
 
-        // Load Services
+        function setMinDate() {
+            const today = new Date();
+            today.setDate(today.getDate() + 1); // Start from tomorrow
+            const minDate = today.toISOString().split('T')[0];
+            document.getElementById('appointmentDate').setAttribute('min', minDate);
+        }
+
+        // LOAD SERVICES
         async function loadServices() {
             try {
                 const response = await fetch('/api/services');
                 const data = await response.json();
+                availableServices = data.services || [];
                 
-                const container = document.getElementById('servicesContainer');
-                
-                if (data.services.length === 0) {
-                    container.innerHTML = '<div class="error">No services available at this time.</div>';
-                    return;
+                const servicesList = document.getElementById('servicesList');
+                if (availableServices.length === 0) {
+                    servicesList.innerHTML = '<p style="text-align:center;color:#666;">No services available at this time.</p>';
+                } else {
+                    servicesList.innerHTML = availableServices.map(service => `
+                        <div class="service-card" data-service-id="${service.id}" onclick="selectService('${service.id}')">
+                            <div class="service-title">${service.name}</div>
+                            <div class="service-price">$${service.price}</div>
+                            <div class="service-duration">⏱ ${service.duration} minutes</div>
+                            <div class="service-description">${service.description || 'Professional holistic health consultation via secure video'}</div>
+                            <div class="hsa-badge">HSA/FSA Accepted</div>
+                        </div>
+                    `).join('');
                 }
                 
-                container.innerHTML = data.services.map(service => `
-                    <div class="service-card" onclick="selectService('${service.id}')">
-                        <div class="service-title">${service.name}</div>
-                        <div class="service-price">$${service.price}</div>
-                        <div class="service-duration">⏱️ ${service.duration} minutes</div>
-                        <div class="service-description">${service.description}</div>
-                    </div>
-                `).join('');
-                
+                document.getElementById('servicesLoading').classList.remove('active');
             } catch (error) {
-                document.getElementById('servicesContainer').innerHTML = 
-                    '<div class="error">Failed to load services. Please refresh the page.</div>';
+                console.error('Error loading services:', error);
+                showError('Failed to load services. Please refresh the page.');
             }
         }
 
-        // Select Service
-        async function selectService(serviceId) {
-            const response = await fetch('/api/services');
-            const data = await response.json();
-            bookingData.service = data.services.find(s => s.id === serviceId);
+        function selectService(serviceId) {
+            // Remove previous selection
+            document.querySelectorAll('.service-card').forEach(card => {
+                card.classList.remove('selected');
+            });
             
-            document.querySelectorAll('.service-card').forEach(card => card.classList.remove('selected'));
-            event.target.closest('.service-card').classList.add('selected');
-            document.getElementById('step1Next').disabled = false;
+            // Add selection to clicked card
+            document.querySelector(`[data-service-id="${serviceId}"]`).classList.add('selected');
+            
+            selectedService = availableServices.find(s => s.id === serviceId);
         }
 
-        // Navigation
-        function nextStep(step) {
-            // Validate current step
-            if (step === 2 && !bookingData.service) {
-                alert('Please select a service');
+        // LOAD AVAILABILITY
+        async function loadAvailability() {
+            if (!selectedService) {
+                showError('Please select a service first');
                 return;
             }
-            
-            if (step === 3) {
-                const personal = {
-                    firstName: document.getElementById('firstName').value,
-                    lastName: document.getElementById('lastName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
-                    dob: document.getElementById('dob').value,
-                    emergencyName: document.getElementById('emergencyName').value,
-                    emergencyPhone: document.getElementById('emergencyPhone').value
-                };
-                
-                if (!personal.firstName || !personal.lastName || !personal.email || !personal.phone || !personal.dob) {
-                    alert('Please fill in all required fields');
-                    return;
-                }
-                
-                bookingData.personal = personal;
-            }
-            
-            if (step === 4) {
-                const symptoms = Array.from(document.querySelectorAll('.checkbox-group input:checked')).map(cb => cb.value);
-                const health = {
-                    chiefComplaint: document.getElementById('chiefComplaint').value,
-                    symptomDuration: document.getElementById('symptomDuration').value,
-                    symptoms: symptoms,
-                    medications: document.getElementById('medications').value,
-                    allergies: document.getElementById('allergies').value
-                };
-                
-                if (!health.chiefComplaint || !health.symptomDuration) {
-                    alert('Please fill in all required health information');
-                    return;
-                }
-                
-                bookingData.health = health;
-            }
-            
-            if (step === 5) {
-                const consents = {
-                    hipaa: document.getElementById('hipaaConsent').checked,
-                    telehealth: document.getElementById('telehealthConsent').checked,
-                    recording: document.getElementById('recordingConsent').checked
-                };
-                
-                if (!consents.hipaa || !consents.telehealth) {
-                    alert('You must acknowledge the HIPAA Privacy Notice and consent to telehealth services to continue');
-                    return;
-                }
-                
-                bookingData.consents = consents;
-            }
-            
-            if (step === 6) {
-                if (!bookingData.schedule.selectedTime) {
-                    alert('Please select a time slot');
-                    return;
-                }
-                showSummary();
-                initializeSquarePayments();
-            }
-            
-            // Update UI
-            document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
-            document.getElementById(`step${step}`).classList.add('active');
-            
-            document.querySelectorAll('.step').forEach(stepEl => stepEl.classList.remove('active'));
-            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-            
-            // Mark completed steps
-            for (let i = 1; i < step; i++) {
-                document.querySelector(`.step[data-step="${i}"]`).classList.add('completed');
-            }
-            
-            currentStep = step;
-            window.scrollTo(0, 0);
-        }
 
-        function previousStep(step) {
-            nextStep(step);
-        }
+            const dateInput = document.getElementById('appointmentDate');
+            const selectedDate = dateInput.value;
+            
+            if (!selectedDate) {
+                return;
+            }
 
-        // Load Availability
-        document.getElementById('appointmentDate').addEventListener('change', async (e) => {
-            const date = e.target.value;
-            if (!date) return;
+            const loadingDiv = document.getElementById('availabilityLoading');
+            const gridDiv = document.getElementById('availabilityGrid');
             
-            const container = document.getElementById('timeSlotsContainer');
-            container.innerHTML = '<div class="loading">Loading available times...</div>';
-            
+            loadingDiv.classList.add('active');
+            gridDiv.innerHTML = '';
+
             try {
                 const response = await fetch('/api/availability', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        serviceVariationId: bookingData.service.variationId,
-                        date: date
+                        serviceVariationId: selectedService.variationId,
+                        date: selectedDate
                     })
                 });
-                
+
                 const data = await response.json();
-                
-                if (data.availabilities.length === 0) {
-                    container.innerHTML = '<div class="error">No available times for this date. Please select another date.</div>';
-                    return;
-                }
-                
-                container.innerHTML = `
-                    <h3 style="margin: 20px 0;">Available Times</h3>
-                    <div class="time-slot-container">
-                        ${data.availabilities.map(slot => `
-                            <div class="time-slot" onclick="selectTimeSlot('${slot.startAt}', '${slot.time}')">
+                const availabilities = data.availabilities || [];
+
+                loadingDiv.classList.remove('active');
+
+                if (availabilities.length === 0) {
+                    gridDiv.innerHTML = '<p style="text-align:center;color:#666;">No available time slots for this date. Please select another date.</p>';
+                } else {
+                    gridDiv.innerHTML = '<div class="calendar-grid">' + 
+                        availabilities.map(slot => `
+                            <div class="time-slot" data-start-at="${slot.startAt}" onclick="selectTime('${slot.startAt}', '${slot.time}')">
                                 ${slot.time}
                             </div>
-                        `).join('')}
-                    </div>
-                `;
+                        `).join('') + 
+                    '</div>';
+                }
             } catch (error) {
-                container.innerHTML = '<div class="error">Failed to load available times. Please try again.</div>';
+                loadingDiv.classList.remove('active');
+                showError('Failed to load availability. Please try again.');
             }
-        });
-
-        // Select Time Slot
-        function selectTimeSlot(startAt, time) {
-            bookingData.schedule = {
-                date: document.getElementById('appointmentDate').value,
-                selectedTime: { startAt, time }
-            };
-            
-            document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-            event.target.classList.add('selected');
-            document.getElementById('step5Next').disabled = false;
         }
 
-        // Show Summary
-        function showSummary() {
-            const summary = `
-                <div class="summary-box">
-                    <h3>Booking Summary</h3>
-                    <div class="summary-item">
-                        <span class="summary-label">Service:</span>
-                        <span class="summary-value">${bookingData.service.name}</span>
+        function selectTime(startAt, time) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            
+            document.querySelector(`[data-start-at="${startAt}"]`).classList.add('selected');
+            
+            selectedTime = { startAt, time };
+        }
+
+        // INITIALIZE SQUARE PAYMENTS
+        async function initializeSquarePayments() {
+            try {
+                console.log('🔄 Fetching Square configuration...');
+                
+                // Get Square config from server
+                const configResponse = await fetch('/api/square-config');
+                const config = await configResponse.json();
+                
+                console.log('✅ Square config loaded:', config.applicationId);
+                
+                payments = Square.payments(config.applicationId, config.locationId);
+                
+                card = await payments.card();
+                await card.attach('#card-container');
+                
+                document.getElementById('card-button').style.display = 'block';
+                document.getElementById('payment-amount').textContent = selectedService.price;
+                
+                const cardButton = document.getElementById('card-button');
+                cardButton.onclick = processPaymentAndBooking;
+                
+                console.log('✅ Square payment form ready');
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize Square payments:', error);
+                showError('Failed to load payment form. Please check your Square credentials and refresh the page.');
+            }
+        }
+
+        // PROCESS PAYMENT AND CREATE BOOKING
+        async function processPaymentAndBooking() {
+            const paymentBtn = document.getElementById('card-button');
+            const loadingDiv = document.getElementById('paymentLoading');
+            const statusContainer = document.getElementById('payment-status-container');
+            
+            paymentBtn.disabled = true;
+            paymentBtn.textContent = 'Processing...';
+            loadingDiv.style.display = 'block';
+            statusContainer.innerHTML = '';
+
+            try {
+                console.log('Starting payment process...');
+                
+                const result = await card.tokenize();
+                if (result.status === 'OK') {
+                    console.log('✅ Card tokenized successfully');
+                    
+                    const bookingData = {
+                        sourceId: result.token,
+                        personal: {
+                            firstName: document.getElementById('firstName').value,
+                            lastName: document.getElementById('lastName').value,
+                            email: document.getElementById('email').value,
+                            phone: document.getElementById('phone').value,
+                            dob: document.getElementById('dob').value,
+                            emergencyName: document.getElementById('emergencyName').value,
+                            emergencyPhone: document.getElementById('emergencyPhone').value
+                        },
+                        health: {
+                            chiefComplaint: document.getElementById('chiefComplaint').value,
+                            symptomDuration: document.getElementById('symptomDuration').value,
+                            symptoms: Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(cb => cb.value),
+                            medications: document.getElementById('medications').value,
+                            allergies: document.getElementById('allergies').value
+                        },
+                        consents: {
+                            hipaa: document.getElementById('consentHipaa').checked,
+                            telehealth: document.getElementById('consentTelehealth').checked,
+                            recording: document.getElementById('consentRecording').checked
+                        },
+                        service: selectedService,
+                        selectedTime: selectedTime
+                    };
+
+                    console.log('Sending payment and booking data to server...');
+                    
+                    const response = await fetch('/api/process-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookingData)
+                    });
+
+                    const apiResult = await response.json();
+
+                    if (apiResult.success) {
+                        console.log('✅ Payment processed and booking created!');
+                        
+                        statusContainer.innerHTML = `
+                            <div style="background: #4CAF50; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h3>✅ Payment Successful!</h3>
+                                <p>Your appointment has been confirmed.</p>
+                            </div>
+                        `;
+                        
+                        setTimeout(() => {
+                            showConfirmation(apiResult.confirmation, apiResult.accessCode);
+                        }, 2000);
+                        
+                    } else {
+                        throw new Error(apiResult.error || 'Payment or booking failed');
+                    }
+                    
+                } else {
+                    console.error('Tokenization error:', result.errors);
+                    throw new Error('Card payment failed. Please check your card details and try again.');
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                statusContainer.innerHTML = `
+                    <div style="background: #f44336; color: white; padding: 15px; border-radius: 10px;">
+                        <strong>⚠️ Payment Failed:</strong> ${error.message}
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Date:</span>
-                        <span class="summary-value">${new Date(bookingData.schedule.date).toLocaleDateString()}</span>
+                `;
+                paymentBtn.disabled = false;
+                paymentBtn.textContent = 'Complete Payment & Book Appointment ($' + selectedService.price + ')';
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // SHOW CONFIRMATION PAGE
+        function showConfirmation(confirmation, accessCode) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const container = document.querySelector('.content');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #4CAF50; margin-bottom: 30px;">Appointment Confirmed!</h2>
+                    
+                    <div class="access-code-box">
+                        <h3 style="margin-bottom: 10px;">🔐 Your Access Code</h3>
+                        <p style="margin-bottom: 10px;">Save this code to view your appointment anytime:</p>
+                        <div class="access-code-display">${accessCode}</div>
+                        <p style="font-size: 14px; opacity: 0.9;">Click "View My Appointment" button and use this code with your email address to view appointment details.</p>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Time:</span>
-                        <span class="summary-value">${bookingData.schedule.selectedTime.time}</span>
+                    
+                    <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin: 30px 0; text-align: left;">
+                        <h3 style="margin-bottom: 20px;">📅 Appointment Details</h3>
+                        <p><strong>Service:</strong> ${confirmation.service}</p>
+                        <p><strong>Date:</strong> ${confirmation.date}</p>
+                        <p><strong>Time:</strong> ${confirmation.time}</p>
+                        <p><strong>Duration:</strong> ${confirmation.duration}</p>
+                        <p><strong>Amount Paid:</strong> ${confirmation.price}</p>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Duration:</span>
-                        <span class="summary-value">${bookingData.service.duration} minutes</span>
+                    
+                    <div style="background: #e8f5e9; padding: 25px; border-radius: 15px; margin: 30px 0;">
+                        <h3 style="color: #2e7d32; margin-bottom: 15px;">📹 Video Consultation Link</h3>
+                        <p style="margin-bottom: 15px;">At your appointment time, join your video call at:</p>
+                        <a href="${confirmation.videoLink}" target="_blank" class="video-link-btn">
+                            Join Video Call
+                        </a>
+                        <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                            ${confirmation.message}
+                        </p>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Patient:</span>
-                        <span class="summary-value">${bookingData.personal.firstName} ${bookingData.personal.lastName}</span>
-                    </div>
-                    <div class="summary-item" style="font-size: 1.2em; font-weight: bold; color: #667eea;">
-                        <span class="summary-label">Total:</span>
-                        <span class="summary-value">$${bookingData.service.price}</span>
+                    
+                    <div style="margin-top: 40px;">
+                        <button class="btn btn-primary" onclick="location.reload()">Book Another Appointment</button>
                     </div>
                 </div>
             `;
-            document.getElementById('summaryContainer').innerHTML = summary;
         }
 
-        // Initialize Square Payments
-        async function initializeSquarePayments() {
-            if (!window.Square) {
-                console.error('Square.js failed to load');
+        function proceedToPayment() {
+            if (!validateStep(5)) {
                 return;
             }
             
-            try {
-                squarePayments = window.Square.payments(squareConfig.applicationId, squareConfig.locationId);
-                card = await squarePayments.card();
-                await card.attach('#card-container');
-            } catch (error) {
-                console.error('Failed to initialize Square Payments:', error);
-            }
-        }
-
-        // Process Payment
-        async function processPayment() {
-            const payButton = document.getElementById('payButton');
-            payButton.disabled = true;
-            payButton.textContent = 'Processing...';
+            // Show appointment summary
+            showAppointmentSummary();
             
-            try {
-                const result = await card.tokenize();
-                if (result.status === 'OK') {
-                    await createBooking(result.token);
-                } else {
-                    alert('Payment failed: ' + result.errors[0].message);
-                    payButton.disabled = false;
-                    payButton.textContent = 'Complete Booking';
-                }
-            } catch (error) {
-                alert('Payment error: ' + error.message);
-                payButton.disabled = false;
-                payButton.textContent = 'Complete Booking';
-            }
+            // Move to payment step
+            nextStep(6);
         }
 
-        // Create Booking
-        async function createBooking(paymentToken) {
-            try {
-                const response = await fetch('/api/create-booking', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        service: bookingData.service,
-                        personal: bookingData.personal,
-                        health: bookingData.health,
-                        consents: bookingData.consents,
-                        selectedTime: bookingData.schedule.selectedTime,
-                        paymentToken: paymentToken
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showSuccess(result);
-                } else {
-                    alert('Booking failed: ' + (result.error || 'Unknown error'));
-                    document.getElementById('payButton').disabled = false;
-                    document.getElementById('payButton').textContent = 'Complete Booking';
-                }
-            } catch (error) {
-                alert('Booking error: ' + error.message);
-                document.getElementById('payButton').disabled = false;
-                document.getElementById('payButton').textContent = 'Complete Booking';
+        // STEP NAVIGATION
+        function nextStep(step) {
+            // Validate current step
+            if (!validateStep(currentStep)) {
+                return;
             }
+
+            // Show appointment summary on payment step
+            if (step === 6) {
+                showAppointmentSummary();
+                initializeSquarePayments();
+            }
+
+            // Hide current step
+            document.getElementById(`section${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}`).classList.add('completed');
+
+            // Show next step
+            currentStep = step;
+            document.getElementById(`section${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            window.scrollTo(0, 0);
         }
 
-        // Show Success
-        function showSuccess(result) {
-            document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
-            document.getElementById('success').classList.add('active');
+        function previousStep(step) {
+            document.getElementById(`section${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}`).classList.remove('active');
             
-            document.getElementById('confirmationDetails').innerHTML = `
-                <div class="summary-box">
-                    <h3>🎉 Your Appointment is Confirmed!</h3>
-                    <div class="summary-item">
-                        <span class="summary-label">Access Code:</span>
-                        <span class="summary-value" style="font-size: 1.5em; color: #667eea; font-weight: bold;">${result.accessCode}</span>
-                    </div>
-                    <p style="color: #666; margin: 20px 0;">Save this code! You'll need it to view your appointment details.</p>
-                    
-                    <div class="summary-item">
-                        <span class="summary-label">Service:</span>
-                        <span class="summary-value">${result.confirmation.service}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Date:</span>
-                        <span class="summary-value">${result.confirmation.date}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Time:</span>
-                        <span class="summary-value">${result.confirmation.time}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Duration:</span>
-                        <span class="summary-value">${result.confirmation.duration}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Amount Paid:</span>
-                        <span class="summary-value">${result.confirmation.price}</span>
-                    </div>
-                </div>
-                
-                <div class="video-link-box">
-                    <h3 style="color: #2e7d32;">📹 Video Consultation</h3>
-                    <p>At your appointment time, join your video call:</p>
-                    <a href="${result.confirmation.videoLink}" target="_blank" class="video-link-btn" style="margin-top: 15px;">
-                        Join Video Call
-                    </a>
-                </div>
-                
-                <p style="text-align: center; color: #666; margin-top: 20px;">
-                    ${result.confirmation.message}
-                </p>
+            currentStep = step;
+            document.getElementById(`section${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}`).classList.remove('completed');
+
+            window.scrollTo(0, 0);
+        }
+
+        function showAppointmentSummary() {
+            const summaryDiv = document.getElementById('appointmentSummary');
+            summaryDiv.innerHTML = `
+                <p><strong>Patient:</strong> ${document.getElementById('firstName').value} ${document.getElementById('lastName').value}</p>
+                <p><strong>Email:</strong> ${document.getElementById('email').value}</p>
+                <p><strong>Service:</strong> ${selectedService.name}</p>
+                <p><strong>Duration:</strong> ${selectedService.duration} minutes</p>
+                <p><strong>Price:</strong> $${selectedService.price}</p>
+                <p><strong>Date:</strong> ${document.getElementById('appointmentDate').value}</p>
+                <p><strong>Time:</strong> ${selectedTime.time}</p>
             `;
-            
-            // Reset form after 5 seconds
+        }
+
+        // VALIDATION
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    if (!selectedService) {
+                        showError('Please select a service');
+                        return false;
+                    }
+                    break;
+                case 2:
+                    const requiredPersonal = ['firstName', 'lastName', 'email', 'phone', 'dob'];
+                    for (let field of requiredPersonal) {
+                        if (!document.getElementById(field).value) {
+                            showError(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+                            return false;
+                        }
+                    }
+                    break;
+                case 3:
+                    if (!document.getElementById('chiefComplaint').value || !document.getElementById('symptomDuration').value) {
+                        showError('Please complete all required health information fields');
+                        return false;
+                    }
+                    break;
+                case 4:
+                    if (!document.getElementById('consentHipaa').checked || !document.getElementById('consentTelehealth').checked) {
+                        showError('You must agree to the HIPAA Privacy Notice and Telehealth Consent to continue');
+                        return false;
+                    }
+                    break;
+                case 5:
+                    if (!selectedTime) {
+                        showError('Please select an appointment time');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        // ERROR HANDLING
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            window.scrollTo(0, 0);
             setTimeout(() => {
-                location.reload();
+                errorDiv.style.display = 'none';
             }, 5000);
         }
 
