@@ -795,7 +795,7 @@
                 
                 <!-- HIPAA Privacy Notice -->
                 <div class="consent-box">
-                    <h3>🔒 HIPAA Privacy Notice</h3>
+                    <h3>ðŸ”’ HIPAA Privacy Notice</h3>
                     <p><strong>Effective Date:</strong> October 19, 2025</p>
                     
                     <h4>How We Use Your Health Information</h4>
@@ -837,7 +837,7 @@
 
                 <!-- Telehealth Consent -->
                 <div class="consent-box">
-                    <h3>💻 Telehealth Informed Consent</h3>
+                    <h3>ðŸ’» Telehealth Informed Consent</h3>
                     
                     <h4>What is Telehealth?</h4>
                     <p>Telehealth uses secure video conferencing to provide healthcare services remotely.</p>
@@ -882,7 +882,7 @@
 
                 <!-- Session Recording -->
                 <div style="background: #fff8dc; border-left: 4px solid #ffa500; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                    <h4 style="margin-top: 0;">📹 Session Recording Policy</h4>
+                    <h4 style="margin-top: 0;">ðŸ“¹ Session Recording Policy</h4>
                     <p>Your telehealth session may be recorded for quality assurance, training, and medical record purposes. Recordings are stored securely and treated as part of your medical record.</p>
                 </div>
 
@@ -919,10 +919,10 @@
 
             <!-- Step 6: Payment -->
             <div class="form-section" id="section6">
-                <h2>💳 Complete Payment</h2>
+                <h2>ðŸ’³ Complete Payment</h2>
                 
                 <div class="payment-warning">
-                    <h3>🔒 Secure Payment Required</h3>
+                    <h3>ðŸ”’ Secure Payment Required</h3>
                     <p>Complete your payment below to confirm your appointment. Your card information is processed securely by Square.</p>
                 </div>
 
@@ -933,7 +933,7 @@
 
                 <!-- Square Payment Form Container -->
                 <div style="background: white; padding: 30px; border-radius: 15px; border: 2px solid #e0e0e0; margin: 30px 0;">
-                    <h3 style="margin-bottom: 20px;">💳 Payment Information</h3>
+                    <h3 style="margin-bottom: 20px;">ðŸ’³ Payment Information</h3>
                     <div id="card-container" style="margin-bottom: 20px;"></div>
                     <div id="payment-status-container"></div>
                 </div>
@@ -983,7 +983,7 @@
 
             <div id="patientAppointment" style="display: none;">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+                    <div style="font-size: 60px; margin-bottom: 10px;">âœ…</div>
                     <h3 style="color: #4CAF50;">Your Appointment</h3>
                 </div>
 
@@ -1062,7 +1062,7 @@
                         <div class="service-card" data-service-id="${service.id}" onclick="selectService('${service.id}')">
                             <div class="service-title">${service.name}</div>
                             <div class="service-price">$${service.price}</div>
-                            <div class="service-duration">⏱ ${service.duration} minutes</div>
+                            <div class="service-duration">â± ${service.duration} minutes</div>
                             <div class="service-description">${service.description || 'Professional holistic health consultation via secure video'}</div>
                             <div class="hsa-badge">HSA/FSA Accepted</div>
                         </div>
@@ -1114,7 +1114,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         serviceVariationId: selectedService.variationId,
-                        date: selectedDate
+                        date: selectedDate,
+                        providerId: selectedService.provider.id
                     })
                 });
 
@@ -1153,13 +1154,13 @@
         // INITIALIZE SQUARE PAYMENTS
         async function initializeSquarePayments() {
             try {
-                console.log('🔄 Fetching Square configuration...');
+                console.log('ðŸ”„ Fetching Square configuration...');
                 
                 // Get Square config from server
                 const configResponse = await fetch('/api/square-config');
                 const config = await configResponse.json();
                 
-                console.log('✅ Square config loaded:', config.applicationId);
+                console.log('âœ… Square config loaded:', config.applicationId);
                 
                 payments = Square.payments(config.applicationId, config.locationId);
                 
@@ -1172,10 +1173,10 @@
                 const cardButton = document.getElementById('card-button');
                 cardButton.onclick = processPaymentAndBooking;
                 
-                console.log('✅ Square payment form ready');
+                console.log('âœ… Square payment form ready');
                 
             } catch (error) {
-                console.error('❌ Failed to initialize Square payments:', error);
+                console.error('âŒ Failed to initialize Square payments:', error);
                 showError('Failed to load payment form. Please check your Square credentials and refresh the page.');
             }
         }
@@ -1196,7 +1197,7 @@
                 
                 const result = await card.tokenize();
                 if (result.status === 'OK') {
-                    console.log('✅ Card tokenized successfully');
+                    console.log('âœ… Card tokenized successfully');
                     
                     const bookingData = {
                         sourceId: result.token,
@@ -1236,11 +1237,11 @@
                     const apiResult = await response.json();
 
                     if (apiResult.success) {
-                        console.log('✅ Payment processed and booking created!');
+                        console.log('âœ… Payment processed and booking created!');
                         
                         statusContainer.innerHTML = `
                             <div style="background: #4CAF50; color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                                <h3>✅ Payment Successful!</h3>
+                                <h3>âœ… Payment Successful!</h3>
                                 <p>Your appointment has been confirmed.</p>
                             </div>
                         `;
@@ -1262,7 +1263,7 @@
                 console.error('Payment error:', error);
                 statusContainer.innerHTML = `
                     <div style="background: #f44336; color: white; padding: 15px; border-radius: 10px;">
-                        <strong>⚠️ Payment Failed:</strong> ${error.message}
+                        <strong>âš ï¸ Payment Failed:</strong> ${error.message}
                     </div>
                 `;
                 paymentBtn.disabled = false;
@@ -1280,18 +1281,18 @@
             const container = document.querySelector('.content');
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px 20px;">
-                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <div style="font-size: 80px; margin-bottom: 20px;">âœ…</div>
                     <h2 style="color: #4CAF50; margin-bottom: 30px;">Appointment Confirmed!</h2>
                     
                     <div class="access-code-box">
-                        <h3 style="margin-bottom: 10px;">🔐 Your Access Code</h3>
+                        <h3 style="margin-bottom: 10px;">ðŸ” Your Access Code</h3>
                         <p style="margin-bottom: 10px;">Save this code to view your appointment anytime:</p>
                         <div class="access-code-display">${accessCode}</div>
                         <p style="font-size: 14px; opacity: 0.9;">Click "View My Appointment" button and use this code with your email address to view appointment details.</p>
                     </div>
                     
                     <div style="background: #f5f7ff; padding: 30px; border-radius: 15px; margin: 30px 0; text-align: left;">
-                        <h3 style="margin-bottom: 20px;">📅 Appointment Details</h3>
+                        <h3 style="margin-bottom: 20px;">ðŸ“… Appointment Details</h3>
                         <p><strong>Service:</strong> ${confirmation.service}</p>
                         <p><strong>Date:</strong> ${confirmation.date}</p>
                         <p><strong>Time:</strong> ${confirmation.time}</p>
@@ -1300,7 +1301,7 @@
                     </div>
                     
                     <div style="background: #e8f5e9; padding: 25px; border-radius: 15px; margin: 30px 0;">
-                        <h3 style="color: #2e7d32; margin-bottom: 15px;">📹 Video Consultation Link</h3>
+                        <h3 style="color: #2e7d32; margin-bottom: 15px;">ðŸ“¹ Video Consultation Link</h3>
                         <p style="margin-bottom: 15px;">At your appointment time, join your video call at:</p>
                         <a href="${confirmation.videoLink}" target="_blank" class="video-link-btn">
                             Join Video Call
@@ -1491,7 +1492,7 @@
             const detailsDiv = document.getElementById('appointmentDetails');
             detailsDiv.innerHTML = `
                 <div class="appointment-detail-box">
-                    <h3 style="margin-bottom: 20px;">📅 Appointment Information</h3>
+                    <h3 style="margin-bottom: 20px;">ðŸ“… Appointment Information</h3>
                     <p><strong>Patient:</strong> ${appointment.patient.name}</p>
                     <p><strong>Email:</strong> ${appointment.patient.email}</p>
                     <p><strong>Phone:</strong> ${appointment.patient.phone}</p>
@@ -1502,7 +1503,7 @@
                 </div>
 
                 <div class="video-link-box">
-                    <h3 style="color: #2e7d32; margin-bottom: 15px;">📹 Video Consultation</h3>
+                    <h3 style="color: #2e7d32; margin-bottom: 15px;">ðŸ“¹ Video Consultation</h3>
                     <p style="margin-bottom: 15px;">At your appointment time, join your video call:</p>
                     <a href="${appointment.videoLink}" target="_blank" class="video-link-btn">
                         Join Video Call
