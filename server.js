@@ -22,11 +22,48 @@ const squareClient = new Client({
 
 // Configuration
 const LOCATION_ID = 'LT1S9BE1EX0PW';
-const TEAM_MEMBER_ID = 'TMpDyughFdZTf6ID';
-const PROVIDER_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
+
+// ============================================================================
+// PROVIDER CONFIGURATION - Patrick (Telehealth) + Sarah (Nutrition)
+// ============================================================================
+const PROVIDERS = {
+    PATRICK: {
+        id: 'TMpDyughFdZTf6ID',
+        name: 'Patrick Smith',
+        specialty: 'telehealth',
+        videoRoom: 'https://doxy.me/PatrickPJAwellness',
+        providerPortal: 'https://doxy.me/PatrickPJAwellness/provider'
+    },
+    SARAH: {
+        id: 'TMvlLj1NfknViJPR',
+        name: 'Sarah Cunningham',
+        specialty: 'nutrition',
+        videoRoom: 'https://doxy.me/PatrickPJAwellness', // Same video room
+        providerPortal: 'https://doxy.me/PatrickPJAwellness/provider' // Same portal
+    }
+};
+
+// Provider Passwords
+const PATRICK_PASSWORD = process.env.PROVIDER_PASSWORD || 'JalenAnna2023!';
+const SARAH_PASSWORD = process.env.SARAH_PASSWORD || 'Sarah2024!'; // Change this!
 const SQUARE_APPLICATION_ID = process.env.SQUARE_APPLICATION_ID || 'sq0idp-aPFZ8KXI6fGJJWdCZKhDfg';
 
-// Helper functions
+// ============================================================================
+// HELPER FUNCTION: Determine which provider for a service
+// ============================================================================
+function getProviderForService(serviceName) {
+    const lowerName = serviceName.toLowerCase();
+    
+    // Nutrition keywords route to Sarah
+    if (lowerName.includes('nutrition')) {
+        return PROVIDERS.SARAH;
+    }
+    
+    // Telehealth keywords route to Patrick (default)
+    return PROVIDERS.PATRICK;
+}
+
+// Helper functions (unchanged from original)
 function generateAccessCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -95,7 +132,7 @@ At your appointment time, click the link above to join your video consultation.
 To view your appointment details anytime, visit our website and use your 6-digit access code: ${accessCode}`;
 }
 
-function buildProviderNote(personal, health, consents, accessCode) {
+function buildProviderNote(personal, health, consents, accessCode, provider) {
     return `🔐 PATIENT ACCESS CODE: ${accessCode}
 
 PATIENT: ${personal.firstName} ${personal.lastName}
@@ -118,8 +155,10 @@ CONSENTS:
 - Recording: ${consents.recording ? 'Yes' : 'No'}
 
 📹 DOXY.ME LINKS:
-Patient Link: https://doxy.me/PatrickPJAwellness
-Provider Portal: https://doxy.me/PatrickPJAwellness/provider`;
+Patient Link: ${provider.videoRoom}
+Provider Portal: ${provider.providerPortal}
+
+PROVIDER: ${provider.name}`;
 }
 
 // HEALTH CHECK
@@ -130,7 +169,7 @@ app.get('/health', (req, res) => {
     });
 });
 
-// NEW: SQUARE CONFIG ENDPOINT - Provides Square credentials to frontend
+// SQUARE CONFIG ENDPOINT
 app.get('/api/square-config', (req, res) => {
     res.json({
         applicationId: SQUARE_APPLICATION_ID,
@@ -138,16 +177,19 @@ app.get('/api/square-config', (req, res) => {
     });
 });
 
-// SERVICES ENDPOINT
+// ============================================================================
+// SERVICES ENDPOINT - Updated to fetch BOTH telehealth AND nutrition
+// ============================================================================
 app.get('/api/services', async (req, res) => {
     try {
-        console.log('📋 Fetching telehealth services...');
+        console.log('📋 Fetching services (telehealth + nutrition)...');
         
+        // Search for services with BOTH keywords
         const response = await squareClient.catalogApi.searchCatalogObjects({
             objectTypes: ['ITEM'],
             query: {
                 textQuery: {
-                    keywords: ['telehealth']
+                    keywords: ['telehealth', 'nutrition']
                 }
             }
         });
@@ -162,6 +204,9 @@ app.get('/api/services', async (req, res) => {
                 const priceInCents = Number(priceAmount || 0);
                 const durationMs = Number(serviceDuration || 0);
                 
+                // Determine provider for this service
+                const provider = getProviderForService(item.itemData.name);
+                
                 return {
                     id: String(item.id),
                     name: String(item.itemData.name),
@@ -169,11 +214,16 @@ app.get('/api/services', async (req, res) => {
                     price: (priceInCents / 100).toFixed(2),
                     duration: Math.floor(durationMs / 60000),
                     variationId: String(variation?.id || ''),
-                    variationVersion: String(variation?.version || '1')
+                    variationVersion: String(variation?.version || '1'),
+                    provider: {
+                        id: provider.id,
+                        name: provider.name,
+                        specialty: provider.specialty
+                    }
                 };
             });
 
-        console.log(`✅ Found ${services.length} telehealth services`);
+        console.log(`✅ Found ${services.length} services (telehealth + nutrition)`);
         res.json({ services });
     } catch (error) {
         console.error('❌ Services error:', error);
@@ -184,18 +234,23 @@ app.get('/api/services', async (req, res) => {
     }
 });
 
-// AVAILABILITY ENDPOINT
+// ============================================================================
+// AVAILABILITY ENDPOINT - Updated to use correct provider ID
+// ============================================================================
 app.post('/api/availability', async (req, res) => {
     try {
-        const { serviceVariationId, date } = req.body;
+        const { serviceVariationId, date, providerId } = req.body;
         
-        console.log('📅 Checking availability for:', { serviceVariationId, date });
+        console.log('📅 Checking availability for:', { serviceVariationId, date, providerId });
         
         const startDate = new Date(date);
         startDate.setHours(0, 0, 0, 0);
         
         const endDate = new Date(date);
         endDate.setHours(23, 59, 59, 999);
+
+        // Use the providerId from the request (determined by service type)
+        const teamMemberId = providerId || PROVIDERS.PATRICK.id;
 
         const response = await squareClient.bookingsApi.searchAvailability({
             query: {
@@ -208,7 +263,7 @@ app.post('/api/availability', async (req, res) => {
                     segmentFilters: [{
                         serviceVariationId: serviceVariationId,
                         teamMemberIdFilter: {
-                            any: [TEAM_MEMBER_ID]
+                            any: [teamMemberId]
                         }
                     }]
                 }
@@ -225,7 +280,7 @@ app.post('/api/availability', async (req, res) => {
             })
         }));
         
-        console.log(`✅ Returning ${availabilities.length} slots`);
+        console.log(`✅ Returning ${availabilities.length} slots for ${teamMemberId}`);
         res.json({ availabilities });
     } catch (error) {
         console.error('❌ Availability check error:', error);
@@ -236,12 +291,16 @@ app.post('/api/availability', async (req, res) => {
     }
 });
 
-// BOOKING ENDPOINT (FREE BOOKINGS)
+// BOOKING ENDPOINT (FREE BOOKINGS) - unchanged
 app.post('/api/bookings', async (req, res) => {
     try {
         const { personal, health, consents, service, selectedTime } = req.body;
         
         console.log('📝 Creating booking for:', personal.email);
+        
+        // Determine provider based on service
+        const provider = getProviderForService(service.name);
+        console.log(`🔀 Routing to provider: ${provider.name} (${provider.specialty})`);
         
         // Generate unique 6-digit access code
         const accessCode = generateAccessCode();
@@ -297,11 +356,11 @@ app.post('/api/bookings', async (req, res) => {
                 appointmentSegments: [{
                     durationMinutes: service.duration,
                     serviceVariationId: service.variationId,
-                    teamMemberId: TEAM_MEMBER_ID,
+                    teamMemberId: provider.id, // Use correct provider ID
                     serviceVariationVersion: BigInt(Date.now())
                 }],
                 customerNote: buildPatientNote(health, accessCode),
-                sellerNote: buildProviderNote(personal, health, consents, accessCode)
+                sellerNote: buildProviderNote(personal, health, consents, accessCode, provider)
             }
         });
         
@@ -314,11 +373,12 @@ app.post('/api/bookings', async (req, res) => {
             accessCode: accessCode,
             confirmation: {
                 service: service.name,
+                provider: provider.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
                 time: selectedTime.time,
                 duration: `${service.duration} minutes`,
                 price: `$${service.price}`,
-                videoLink: 'https://doxy.me/PatrickPJAwellness',
+                videoLink: provider.videoRoom,
                 message: 'Check your email/SMS for your appointment confirmation with video link!'
             }
         });
@@ -332,12 +392,18 @@ app.post('/api/bookings', async (req, res) => {
     }
 });
 
-// PAYMENT PROCESSING ENDPOINT (New)
+// ============================================================================
+// PAYMENT PROCESSING ENDPOINT - Updated with provider routing
+// ============================================================================
 app.post('/api/process-payment', async (req, res) => {
     try {
         const { sourceId, personal, health, consents, service, selectedTime } = req.body;
         
         console.log('💳 Processing payment for:', personal.email);
+        
+        // Determine provider based on service
+        const provider = getProviderForService(service.name);
+        console.log(`🔀 Routing to provider: ${provider.name} (${provider.specialty})`);
         
         // Generate unique 6-digit access code
         const accessCode = generateAccessCode();
@@ -396,7 +462,7 @@ app.post('/api/process-payment', async (req, res) => {
             },
             customerId: customerId,
             locationId: LOCATION_ID,
-            note: `Telehealth: ${service.name} - ${personal.firstName} ${personal.lastName}`
+            note: `${service.name} - ${personal.firstName} ${personal.lastName} with ${provider.name}`
         });
         
         console.log('✅ Payment successful:', paymentResponse.result.payment.id);
@@ -410,11 +476,11 @@ app.post('/api/process-payment', async (req, res) => {
                 appointmentSegments: [{
                     durationMinutes: service.duration,
                     serviceVariationId: service.variationId,
-                    teamMemberId: TEAM_MEMBER_ID,
+                    teamMemberId: provider.id, // Use correct provider ID
                     serviceVariationVersion: BigInt(Date.now())
                 }],
                 customerNote: buildPatientNote(health, accessCode),
-                sellerNote: buildProviderNote(personal, health, consents, accessCode)
+                sellerNote: buildProviderNote(personal, health, consents, accessCode, provider)
             }
         });
         
@@ -428,11 +494,12 @@ app.post('/api/process-payment', async (req, res) => {
             accessCode: accessCode,
             confirmation: {
                 service: service.name,
+                provider: provider.name,
                 date: new Date(selectedTime.startAt).toLocaleDateString(),
                 time: selectedTime.time,
                 duration: `${service.duration} minutes`,
                 price: `$${service.price}`,
-                videoLink: 'https://doxy.me/PatrickPJAwellness',
+                videoLink: provider.videoRoom,
                 message: 'Check your email/SMS for your appointment confirmation with video link!'
             }
         });
@@ -446,7 +513,7 @@ app.post('/api/process-payment', async (req, res) => {
     }
 });
 
-// PATIENT LOGIN ENDPOINT (New)
+// PATIENT LOGIN ENDPOINT - unchanged
 app.post('/api/patient-login', async (req, res) => {
     try {
         const { accessCode, email } = req.body;
@@ -460,19 +527,30 @@ app.post('/api/patient-login', async (req, res) => {
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 90);
         
-        const response = await squareClient.bookingsApi.listBookings({
-            teamMemberId: TEAM_MEMBER_ID,
+        // Check bookings for BOTH providers
+        const patrickBookings = await squareClient.bookingsApi.listBookings({
+            teamMemberId: PROVIDERS.PATRICK.id,
             locationId: LOCATION_ID,
             startAtMin: startDate.toISOString(),
             startAtMax: endDate.toISOString()
         });
         
-        const bookings = response.result.bookings || [];
+        const sarahBookings = await squareClient.bookingsApi.listBookings({
+            teamMemberId: PROVIDERS.SARAH.id,
+            locationId: LOCATION_ID,
+            startAtMin: startDate.toISOString(),
+            startAtMax: endDate.toISOString()
+        });
         
-        console.log(`📋 Searching ${bookings.length} bookings for access code ${accessCode} and email ${email}`);
+        const allBookings = [
+            ...(patrickBookings.result.bookings || []),
+            ...(sarahBookings.result.bookings || [])
+        ];
+        
+        console.log(`📋 Searching ${allBookings.length} bookings for access code ${accessCode} and email ${email}`);
         
         // Find booking with matching access code and email
-        const matchingBooking = bookings.find(booking => {
+        const matchingBooking = allBookings.find(booking => {
             const hasAccessCode = booking.customerNote?.includes(`ACCESS CODE: ${accessCode}`) ||
                                  booking.sellerNote?.includes(`ACCESS CODE: ${accessCode}`);
             
@@ -534,13 +612,37 @@ app.post('/api/patient-login', async (req, res) => {
     }
 });
 
-// PROVIDER LOGIN
+// ============================================================================
+// PROVIDER LOGIN - Updated to support multiple providers
+// ============================================================================
 app.post('/api/provider-login', (req, res) => {
     const { password } = req.body;
     
-    if (password === PROVIDER_PASSWORD) {
-        res.json({ success: true });
-    } else {
+    // Patrick's password - Owner access (sees ALL bookings)
+    if (password === PATRICK_PASSWORD) {
+        res.json({ 
+            success: true,
+            provider: {
+                name: 'Patrick Smith',
+                role: 'owner',
+                viewAll: true,
+                teamMemberId: PROVIDERS.PATRICK.id
+            }
+        });
+    } 
+    // Sarah's password - Staff access (sees ONLY her bookings)
+    else if (password === SARAH_PASSWORD) {
+        res.json({ 
+            success: true,
+            provider: {
+                name: 'Sarah Cunningham',
+                role: 'staff',
+                viewAll: false,
+                teamMemberId: PROVIDERS.SARAH.id
+            }
+        });
+    } 
+    else {
         res.status(401).json({ 
             success: false, 
             error: 'Invalid password' 
@@ -548,37 +650,85 @@ app.post('/api/provider-login', (req, res) => {
     }
 });
 
-// PROVIDER BOOKINGS
+// ============================================================================
+// PROVIDER BOOKINGS - Updated to fetch bookings for BOTH providers
+// ============================================================================
 app.get('/api/provider/bookings', async (req, res) => {
     try {
+        const { teamMemberId } = req.query; // Optional filter
+        
         console.log('📋 Fetching provider bookings...');
+        if (teamMemberId) {
+            console.log(`🔍 Filtering for team member: ${teamMemberId}`);
+        }
         
         const now = new Date();
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 30);
         
-        const response = await squareClient.bookingsApi.listBookings(
-            undefined,
-            undefined,
-            undefined,
-            TEAM_MEMBER_ID,
-            LOCATION_ID,
-            now.toISOString(),
-            endDate.toISOString()
-        );
+        let allBookings = [];
         
-        const bookings = (response.result.bookings || [])
-            .map(booking => ({
-                id: String(booking.id),
-                startAt: String(booking.startAt),
-                customer: {
-                    name: `${booking.customerNote?.split('\n')[0]?.replace('Chief Complaint: ', '') || 'Unknown'}`,
-                    email: booking.sellerNote?.match(/EMAIL: (.+)/)?.[1] || '',
-                    phone: booking.sellerNote?.match(/PHONE: (.+)/)?.[1] || ''
-                },
-                customerNote: booking.customerNote,
-                sellerNote: booking.sellerNote
-            }))
+        // If filtering for specific provider, fetch only their bookings
+        if (teamMemberId) {
+            const response = await squareClient.bookingsApi.listBookings(
+                undefined,
+                undefined,
+                undefined,
+                teamMemberId,
+                LOCATION_ID,
+                now.toISOString(),
+                endDate.toISOString()
+            );
+            allBookings = response.result.bookings || [];
+        } else {
+            // Fetch bookings for both providers (owner view)
+            const patrickResponse = await squareClient.bookingsApi.listBookings(
+                undefined,
+                undefined,
+                undefined,
+                PROVIDERS.PATRICK.id,
+                LOCATION_ID,
+                now.toISOString(),
+                endDate.toISOString()
+            );
+            
+            const sarahResponse = await squareClient.bookingsApi.listBookings(
+                undefined,
+                undefined,
+                undefined,
+                PROVIDERS.SARAH.id,
+                LOCATION_ID,
+                now.toISOString(),
+                endDate.toISOString()
+            );
+            
+            // Combine bookings from both providers
+            allBookings = [
+                ...(patrickResponse.result.bookings || []),
+                ...(sarahResponse.result.bookings || [])
+            ];
+        }
+        
+        const bookings = allBookings
+            .map(booking => {
+                // Determine provider from team member ID
+                const isPatrick = booking.appointmentSegments?.[0]?.teamMemberId === PROVIDERS.PATRICK.id;
+                const provider = isPatrick ? PROVIDERS.PATRICK.name : PROVIDERS.SARAH.name;
+                
+                return {
+                    id: String(booking.id),
+                    startAt: String(booking.startAt),
+                    provider: provider,
+                    teamMemberId: booking.appointmentSegments?.[0]?.teamMemberId,
+                    customer: {
+                        name: `${booking.customerNote?.split('\n')[0]?.replace('Chief Complaint: ', '') || 'Unknown'}`,
+                        email: booking.sellerNote?.match(/EMAIL: (.+)/)?.[1] || '',
+                        phone: booking.sellerNote?.match(/PHONE: (.+)/)?.[1] || ''
+                    },
+                    customerNote: booking.customerNote,
+                    sellerNote: booking.sellerNote
+                };
+            })
             .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
         
         console.log(`✅ Found ${bookings.length} bookings`);
@@ -607,10 +757,16 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`
 🚀 PJA Wellness Telehealth Backend Running!
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 Port: ${PORT}
 🏥 Location: ${LOCATION_ID}
-👨‍⚕️ Provider: Patrick Smith (${TEAM_MEMBER_ID})
+
+👨‍⚕️ PROVIDERS:
+  • Patrick Smith (${PROVIDERS.PATRICK.id})
+    - Specialty: Telehealth/Holistic Health
+  • Sarah Cunningham (${PROVIDERS.SARAH.id})
+    - Specialty: Nutrition Consulting
+
 🔒 Environment: ${process.env.SQUARE_ENVIRONMENT || 'production'}
 💳 Square App ID: ${SQUARE_APPLICATION_ID}
 🎥 Patient Video Link: https://doxy.me/PatrickPJAwellness
@@ -618,6 +774,6 @@ app.listen(PORT, () => {
 📧 Notifications: Square SMS/Email (Automatic)
 💳 Payment: Processed BEFORE booking creation
 🔐 Patient Portal: 6-digit access code system enabled
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
 });
